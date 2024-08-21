@@ -17,18 +17,12 @@ MODULE_AUTHOR("Tu Nombre");
 MODULE_DESCRIPTION("Modulo para leer informacion de memoria y CPU");
 MODULE_VERSION("1.0");
 
-#define PROC_NAME "tarea1" // nombre del archivo en /proc
+#define PROC_NAME "sysinfo_202200135" // nombre del archivo en /proc
 
 /* 
     Esta función se encarga de obtener la información de la memoria
     - si_meminfo: recibe un puntero a una estructura sysinfo, la cual se llena con la información de la memoria
 */
-#include <linux/sched.h>    // Para for_each_process
-#include <linux/mm.h>       // Para struct mm_struct
-#include <linux/sched/stat.h> // Para el uso de CPU
-#include <linux/seq_file.h>
-#include <linux/sysinfo.h>
-#include <linux/uaccess.h>  // Para copy_from_user
 
 
 static int sysinfo_show(struct seq_file *m, void *v) {
@@ -83,28 +77,10 @@ static int sysinfo_show(struct seq_file *m, void *v) {
 }
 
 
-// int read_proc(char *buf, char **start, off_t offset, int count, int *eof, void *data) {
-//     int len = 0;
-//     struct task_struct *task_list;
-//     for_each_process(task_list) {
-//         len += sprintf(buf+len, "PID: %d, Name: %s, State: %ld\n", task_list->pid, task_list->comm, task_list->state);
-//     }
-//     return len;
-// }
-
-/* 
-    Esta función se ejecuta cuando se abre el archivo en /proc
-    - single_open: se encarga de abrir el archivo y ejecutar la función sysinfo_show
-*/
 static int sysinfo_open(struct inode *inode, struct file *file) {
     return single_open(file, sysinfo_show, NULL);
 }
 
-/* 
-    Esta estructura contiene las operaciones a realizar cuando se accede al archivo en /proc
-    - proc_open: se ejecuta cuando se abre el archivo
-    - proc_read: se ejecuta cuando se lee el archivo
-*/
 
 static const struct proc_ops sysinfo_ops = {
     .proc_open = sysinfo_open,
@@ -112,26 +88,15 @@ static const struct proc_ops sysinfo_ops = {
 };
 
 
-/* 
-    Esta macro se encarga de hacer dos cosas:
-    1. Ejecutar la función proc_create, la cual recibe el nombre del archivo a guardar en /proc, permisos,
-        y la estructura con las operaciones a realizar
-
-    2. Imprimir un mensaje en el log del kernel
-*/
 static int __init sysinfo_init(void) {
     proc_create(PROC_NAME, 0, NULL, &sysinfo_ops);
-    printk(KERN_INFO "tarea1 module loaded\n");
+    printk(KERN_INFO "sysinfo module loaded\n");
     return 0;
 }
 
-/* 
-    Esta macro se encarga de hacer dos cosas:
-    1. Ejecutar la función remove_proc_entry, la cual recibe el nombre del archivo a eliminar de /proc
-*/
 static void __exit sysinfo_exit(void) {
     remove_proc_entry(PROC_NAME, NULL);
-    printk(KERN_INFO "tarea1 module unloaded\n");
+    printk(KERN_INFO "sysinfo module unloaded\n");
 }
 
 module_init(sysinfo_init);
