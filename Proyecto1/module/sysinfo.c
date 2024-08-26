@@ -102,7 +102,7 @@ static void get_container_processes_info(struct seq_file *m) {
 
     // unsigned long total_jiffies = jiffies;
     for_each_process(task) {
-        if (task->pid == 3355) {
+        if (task->pid == 5735) {
             // struct sched_entity *se = &task->se;
             struct mm_struct *mm = task->mm;
             unsigned long rss = 0, vsz = 0;
@@ -133,15 +133,15 @@ static void get_container_processes_info(struct seq_file *m) {
             utime = task->utime;
             stime = task->stime;
             task_unlock(task);
-            // utime /= (HZ*10);
-            // stime /= (HZ*10);
+            utime /= (HZ*10000);
+            stime /= (HZ*10000);
             start_time /= (HZ*10000);
             start_time /= 100;
-            // utime /= 100;
-            // stime /= 100;
+            utime /= 10;
+            stime /= 10;
             // process_elapsed_sec = start_time-jiffies_to_clock_t(task->start_time);
-            process_elapsed_sec =  jiffies_to_msecs(jiffies - task->start_time) / 1000;
-            process_ussage_sec = jiffies_to_msecs(task->utime)/(HZ*10) + jiffies_to_msecs(task->stime)/(HZ*10);
+            process_elapsed_sec =  uptime_sec - start_time;
+            process_ussage_sec = utime + stime;
             // process_ussage_sec /= (HZ*10);
             // process_ussage_sec /= 100;
             ktime_get_boottime_ts64(&uptime_ts);
@@ -151,7 +151,7 @@ static void get_container_processes_info(struct seq_file *m) {
 
             if(process_elapsed_sec > 0){
                 // process_usage = (process_ussage_sec) / (process_elapsed_sec);
-                process_usage = (process_ussage_sec*HZ*100) / (jiffies-(task->start_time/(HZ*10000))*num_online_cpus());
+                process_usage = (process_ussage_sec*1000) / (process_elapsed_sec*num_online_cpus());
             }
             // process_usage = (total_time * 10000) / (total_jiffies * num_online_cpus());
             // process_usage = jiffies_to_msecs(process_usage);
@@ -174,6 +174,12 @@ static void get_container_processes_info(struct seq_file *m) {
             seq_printf(m, "\"cmdline\": \"%s\",\n", task->comm);
             seq_printf(m, "\"vsz\": %lu,\n", vszKB);
             seq_printf(m, "\"rss\": %lu,\n", rssKB);
+            seq_printf(m, "\"start_time\": %lu,\n", start_time);
+            seq_printf(m, "\"uptime\": %lu,\n", uptime);
+            seq_printf(m, "\"process_elapsed_sec\": %lu,\n", process_elapsed_sec);
+            seq_printf(m, "\"process_ussage_sec\": %lu,\n", process_ussage_sec);
+            seq_printf(m, "\"utime\": %lu,\n", utime);
+            seq_printf(m, "\"stime\": %lu,\n", stime);
             porc_ram = (rss * 100) / toal_ram;
             seq_printf(m, "\"mem percent\": %lu,\n", porc_ram);
             // seq_printf(m, "\"cpu percent\": %lu\n", process_usage);
