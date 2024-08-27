@@ -76,15 +76,15 @@ static void get_memory_info(struct seq_file *m){
     seq_printf(m, "},\n");
 }
 
-// Función para verificar si un proceso pertenece a un contenedor Docker
-// static int is_docker_container(struct task_struct *task) {
-//     // Verifica si el proceso padre es `containerd-shim`
-//     if (task && strstr(task->comm, "containerd-shim") != NULL) {
-//         return 1;
-//     }
+//Función para verificar si un proceso pertenece a un contenedor Docker
+static int is_docker_container(struct task_struct *task) {
+    // Verifica si el proceso padre es `containerd-shim`
+    if (task && strstr(task->comm, "containerd-shim") != NULL) {
+        return 1;
+    }
 
-//     return 0;
-// }
+    return 0;
+}
 
 
 static void get_container_processes_info(struct seq_file *m) {
@@ -94,15 +94,13 @@ static void get_container_processes_info(struct seq_file *m) {
     struct sysinfo i;
     si_meminfo(&i);
     signed long toal_ram = i.totalram * i.mem_unit;
-
-    unsigned long utime, stime, start_time,uptime;
-    unsigned long uptime_sec, process_elapsed_sec,process_ussage_sec;
-    unsigned long process_usage;
-    struct timespec64 uptime_ts;
+    unsigned long total_jiffies = jiffies;
+    unsigned long cpu_usage;
+    unsigned long cpu_usage_child;
 
     // unsigned long total_jiffies = jiffies;
     for_each_process(task) {
-        if (task->pid == 5735) {
+        if (is_docker_container(task)==1) {
             // struct sched_entity *se = &task->se;
             struct mm_struct *mm = task->mm;
             unsigned long rss = 0, vsz = 0;
@@ -110,63 +108,43 @@ static void get_container_processes_info(struct seq_file *m) {
             unsigned long porc_ram = 0;
             if (mm) {
                 rss = get_mm_rss(mm) << PAGE_SHIFT;
-                rssKB = rss / 1024;
+                // rssKB = rss / 1024;
                 vsz = mm->total_vm << PAGE_SHIFT;
-                vszKB = vsz / 1024;
+                // vszKB = vsz / 1024;
             }
             unsigned long total_ram_pages;
             total_ram_pages = totalram_pages();
             if(found){
                 seq_printf(m, ",\n");
             }
-            
-            start_time = task->start_time;
-            // utime = utime / 1000;
-            // stime = stime / 1000;
-            // start_time = start_time / 1000;
-            // uptime_sec = task->real_start_time;
-            uptime_sec = ktime_get_boottime_seconds();
-            // unsigned long long exec_runtime = se->sum_exec_runtime;
-            // unsigned long long total_jiffies = jiffies;
-            // unsigned long total_time = task->utime + task->stime;
-            task_lock(task);
-            utime = task->utime;
-            stime = task->stime;
-            task_unlock(task);
-            utime /= (HZ*10000);
-            stime /= (HZ*10000);
-            start_time /= (HZ*10000);
-            start_time /= 100;
-            utime /= 10;
-            stime /= 10;
-            // process_elapsed_sec = start_time-jiffies_to_clock_t(task->start_time);
-            process_elapsed_sec =  uptime_sec - start_time;
-            process_ussage_sec = utime + stime;
-            // process_ussage_sec /= (HZ*10);
-            // process_ussage_sec /= 100;
-            ktime_get_boottime_ts64(&uptime_ts);
-            uptime = uptime_ts.tv_sec;
-            // process_elapsed_sec /= (HZ*10);
-            // process_elapsed_sec /= 100;
 
-            if(process_elapsed_sec > 0){
-                // process_usage = (process_ussage_sec) / (process_elapsed_sec);
-                process_usage = (process_ussage_sec*1000) / (process_elapsed_sec*num_online_cpus());
-            }
-            // process_usage = (total_time * 10000) / (total_jiffies * num_online_cpus());
-            // process_usage = jiffies_to_msecs(process_usage);
-            // if(task->children.next != NULL){
-            //     struct task_struct *child;
-            //     list_for_each_entry(child, &task->children, sibling){
-            //         struct mm_struct *mm_child = child->mm;
-            //         if(mm_child){
-            //             rss += get_mm_rss(mm_child) << PAGE_SHIFT;
-            //             vsz += mm_child->total_vm << PAGE_SHIFT;
-            //         }
-            //     }
-            //     // cpu_percentage = (total_time * 100) / (total_cpu_time * num_online_cpus());
-            // }
+            unsigned long total_time = task->utime + task->stime;
+            cpu_usage = (total_time * 10000) / total_jiffies;
+                
             
+            if(task->children.next != NULL){
+                struct task_struct *child;
+                list_for_each_entry(child, &task->children, sibling){
+                    struct mm_struct *mm_child = child->mm;
+                    if(mm_child){
+                        rss += get_mm_rss(mm_child) << PAGE_SHIFT;
+                        vsz += mm_child->total_vm << PAGE_SHIFT;
+                    }
+                    unsigned long total_time_child = child->utime + child->stime;
+                    // total_time_child /= HZ;
+                    cpu_usage_child = (total_time_child * 10) / (total_jiffies);
+                    cpu_usage += cpu_usage_child;
+                    // cpu_usage = (total_time_child * 10000) / (total_jiffies);
+                    // seq_printf(m, "%s", get_process_cmdline(child));
+                }
+                
+            }
+            rssKB = rss / 1024;
+            vszKB = vsz / 1024;
+
+            if(found){
+                seq_printf(m, ",\n");
+            }
             
             seq_printf(m, "{\n");
             seq_printf(m, "\"pid\": %d,\n", task->pid);
@@ -174,16 +152,10 @@ static void get_container_processes_info(struct seq_file *m) {
             seq_printf(m, "\"cmdline\": \"%s\",\n", task->comm);
             seq_printf(m, "\"vsz\": %lu,\n", vszKB);
             seq_printf(m, "\"rss\": %lu,\n", rssKB);
-            seq_printf(m, "\"start_time\": %lu,\n", start_time);
-            seq_printf(m, "\"uptime\": %lu,\n", uptime);
-            seq_printf(m, "\"process_elapsed_sec\": %lu,\n", process_elapsed_sec);
-            seq_printf(m, "\"process_ussage_sec\": %lu,\n", process_ussage_sec);
-            seq_printf(m, "\"utime\": %lu,\n", utime);
-            seq_printf(m, "\"stime\": %lu,\n", stime);
-            porc_ram = (rss * 100) / toal_ram;
-            seq_printf(m, "\"mem percent\": %lu,\n", porc_ram);
-            // seq_printf(m, "\"cpu percent\": %lu\n", process_usage);
-            seq_printf(m, "\"process_usage\": %lu\n", process_usage);
+            porc_ram = (rss * 10000) / toal_ram;
+            seq_printf(m, "\"mem percent\": %lu.%02lu,\n", porc_ram/100, porc_ram%100);
+            seq_printf(m, "\"CPUUsage\": %lu.%02lu\n", cpu_usage / 100, cpu_usage % 100);
+            // seq_printf(m, "\"CPUUsageChild\": %lu.%02lu\n", cpu_usage_child / 100, cpu_usage_child % 100);
             seq_printf(m, "}");
             found = true;
         }

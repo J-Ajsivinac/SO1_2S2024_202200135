@@ -1,16 +1,13 @@
+import time
+
 def cpu_stress():
-    counter = 0
     while True:
-        # Realizar cálculos
-        for _ in range(10**5):
-            _ = 1 + 1
+        # Realiza cálculos intensivos
+        for _ in range(1000000):
+            _ = 3.1415 * 2.7182
         
-        # Pausa artificial
-        counter += 1
-        if counter % 33 == 0:  # Aproximadamente cada 3% de uso
-            for _ in range(10**6):
-                pass  # Esta pausa simula el sleep
+        # Pausa para reducir el uso de CPU
+        time.sleep(0.98)
 
 if __name__ == "__main__":
-    print("Iniciando estrés de CPU controlado")
     cpu_stress()
