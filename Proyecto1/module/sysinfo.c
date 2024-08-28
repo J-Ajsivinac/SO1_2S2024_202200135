@@ -69,11 +69,11 @@ static void get_memory_info(struct seq_file *m){
     free_r = free_ram;
     unsigned long used_ram = toal_ram - free_ram;
     used = used_ram;
-    seq_printf(m, "Memory:\n");
-    seq_printf(m, "{\n\"total_ram\": %lu,\n", toal_ram / 1024);
-    seq_printf(m, "\"free_ram\": %lu,\n", free_ram / 1024);
-    seq_printf(m, "\"used_ram\": %lu,\n", used_ram / 1024);
-    seq_printf(m, "},\n");
+    seq_printf(m, "\t\"Memory\":");
+    seq_printf(m, "{\n\t\t\"total_ram\": %lu,\n", toal_ram / 1024);
+    seq_printf(m, "\t\t\"free_ram\": %lu,\n", free_ram / 1024);
+    seq_printf(m, "\t\t\"used_ram\": %lu\n", used_ram / 1024);
+    seq_printf(m, "\t},\n");
 }
 
 //Función para verificar si un proceso pertenece a un contenedor Docker
@@ -146,21 +146,21 @@ static void get_container_processes_info(struct seq_file *m) {
                 seq_printf(m, ",\n");
             }
             
-            seq_printf(m, "{\n");
-            seq_printf(m, "\"pid\": %d,\n", task->pid);
-            seq_printf(m, "\"name\": \"%s\",\n", get_process_cmdline(task));
-            seq_printf(m, "\"cmdline\": \"%s\",\n", task->comm);
-            seq_printf(m, "\"vsz\": %lu,\n", vszKB);
-            seq_printf(m, "\"rss\": %lu,\n", rssKB);
+            seq_printf(m, "\t\t{\n");
+            seq_printf(m, "\t\t\t\"pid\": %d,\n", task->pid);
+            seq_printf(m, "\t\t\t\"name\": \"%s\",\n", task->comm);
+            seq_printf(m, "\t\t\t\"cmdLine\": \"%s\",\n", get_process_cmdline(task));
+            seq_printf(m, "\t\t\t\"vsz\": %lu,\n", vszKB);
+            seq_printf(m, "\t\t\t\"rss\": %lu,\n", rssKB);
             porc_ram = (rss * 10000) / toal_ram;
-            seq_printf(m, "\"mem percent\": %lu.%02lu,\n", porc_ram/100, porc_ram%100);
-            seq_printf(m, "\"CPUUsage\": %lu.%02lu\n", cpu_usage / 100, cpu_usage % 100);
+            seq_printf(m, "\t\t\t\"memoryUsage\": %lu.%02lu,\n", porc_ram/100, porc_ram%100);
+            seq_printf(m, "\t\t\t\"cpuUsage\": %lu.%02lu\n", cpu_usage / 100, cpu_usage % 100);
             // seq_printf(m, "\"CPUUsageChild\": %lu.%02lu\n", cpu_usage_child / 100, cpu_usage_child % 100);
-            seq_printf(m, "}");
+            seq_printf(m, "\t\t}");
             found = true;
         }
     }
-
+    seq_printf(m, "\n");
     if (!found) {
         seq_printf(m, "{ \"error\": \"No container processes found\" }\n");
     }
@@ -169,10 +169,11 @@ static void get_container_processes_info(struct seq_file *m) {
 static int sysinfo_proc_show(struct seq_file *m, void *v) {
     seq_printf(m, "{\n");
     get_memory_info(m);
-    seq_printf(m, "Processes:\n");
+    seq_printf(m, "\t\"Processes\":");
     seq_printf(m, "[\n");
     get_container_processes_info(m);
-    seq_printf(m, "]\n");
+    seq_printf(m, "\t]\n");
+    seq_printf(m, "}\n");
     return 0;
 }
 
@@ -198,7 +199,7 @@ static void __exit sysinfo_module_exit(void) {
 }
 
 MODULE_LICENSE("GPL");
-MODULE_AUTHOR("Joab Ajsivianc");
+MODULE_AUTHOR("Joab Ajsivinac");
 MODULE_DESCRIPTION("Módulo de kernel para capturar información de los procesos de un contenedor Docker en /proc");
 MODULE_VERSION("1.0");
 
