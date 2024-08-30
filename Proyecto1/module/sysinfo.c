@@ -106,10 +106,8 @@ static void get_container_processes_info(struct seq_file *m) {
     unsigned long total_jiffies = jiffies;
     unsigned long cpu_usage = 0;
     unsigned long cpu_usage_child = 0;
-    // unsigned long total_jiffies = jiffies;
     for_each_process(task) {
         if (is_docker_container(task)==1) {
-            // struct sched_entity *se = &task->se;
             struct mm_struct *mm = task->mm;
             unsigned long rss = 0, vsz = 0;
             unsigned long rssKB = 0, vszKB = 0;
@@ -142,31 +140,18 @@ static void get_container_processes_info(struct seq_file *m) {
                     }   
 
                     total_time_children += (child->utime/(HZ*1000) + child->stime/(HZ*1000));
-                    // total_time_children /= HZ;
-                    // seq_printf(m, "%s\n", get_process_cmdline(child));
-                    // seq_printf(m, "%d\n", child->pid);
                     start_time_children = child->start_time;
                     start_time_children /= HZ*100000;
                     start_time_children /= 10;
-                    // cpu_usage += cpu_usage_child;
-                    // cpu_usage = (total_time_child * 10000) / (total_jiffies);
-                    // seq_printf(m, "%s", get_process_cmdline(child));
                     count++;
                 }
               
             }
             cpu_usage_child = (total_time_children * 10) / ((ktime_get_boottime_seconds())-start_time_children);
-            // unsigned long total_time_all = total_time + total_time_children;
-            // seq_printf(m, "jiffies -> %lld\n", ktime_get_boottime_seconds());
-            // seq_printf(m, "start -> %ld\n", start_time_children);
             cpu_usage = (total_time * 10000) / total_jiffies;
             cpu_usage += cpu_usage_child;
             rssKB = rss / 1024;
             vszKB = vsz / 1024;
-
-            // if(found){
-            //     seq_printf(m, ",\n");
-            // }
             
             seq_printf(m, "\t\t{\n");
             seq_printf(m, "\t\t\t\"pid\": %d,\n", task->pid);
@@ -177,7 +162,6 @@ static void get_container_processes_info(struct seq_file *m) {
             porc_ram = (rss * 10000) / toal_ram;
             seq_printf(m, "\t\t\t\"memoryUsage\": %lu.%02lu,\n", porc_ram/100, porc_ram%100);
             seq_printf(m, "\t\t\t\"cpuUsage\": %lu.%02lu\n", cpu_usage / 100, cpu_usage % 100);
-            // seq_printf(m, "\"CPUUsageChild\": %lu.%02lu\n", cpu_usage_child / 100, cpu_usage_child % 100);
             seq_printf(m, "\t\t}");
             found = true;
         }
