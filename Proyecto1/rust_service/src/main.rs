@@ -1,8 +1,11 @@
 mod process;
 mod utils;
+mod analyzer;
 
 use utils::{read_proc_file, parser_proc_to_struct};
 use process::{SystemInfo};
+
+use analyzer::{analyzer};
 
 fn main() {
     let system_info: Result<SystemInfo, _>;
@@ -11,9 +14,7 @@ fn main() {
 
     match system_info{
         Ok(info) => {
-            for process in info.processes{
-                println!("PID: {}, Name: {}, CPU Usage: {}, Memory Usage: {}, container_id: {}", process.pid, process.name, process.cpu_usage, process.memory_usage, process.get_container_id());
-            }
+            analyzer(info);
         },
         Err(e) => {
             println!("Error: {}", e);
