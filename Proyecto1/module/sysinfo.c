@@ -7,6 +7,11 @@
 #include <linux/slab.h>
 #include <linux/cgroup.h>
 #include <linux/fs.h>
+
+#include <linux/ktime.h>
+#include <linux/timekeeping.h>
+#include <linux/time64.h>
+
 // sysinfo_202200135
 #define FILE_NAME "sysinfo"
 #define MAX_CMDLINE_LENGTH 1000
@@ -14,6 +19,10 @@
 
 static char *get_process_cmdline(struct task_struct *task) {
     struct mm_struct *mm;
+
+    struct timespec64 uptime;
+    ktime_get_boottime_ts64(&uptime);
+
     char *cmdline, *p;
     unsigned long arg_start, arg_end, env_start;
     int i, len;
@@ -95,9 +104,8 @@ static void get_container_processes_info(struct seq_file *m) {
     si_meminfo(&i);
     signed long toal_ram = i.totalram * i.mem_unit;
     unsigned long total_jiffies = jiffies;
-    unsigned long cpu_usage;
-    unsigned long cpu_usage_child;
-
+    unsigned long cpu_usage = 0;
+    unsigned long cpu_usage_child = 0;
     // unsigned long total_jiffies = jiffies;
     for_each_process(task) {
         if (is_docker_container(task)==1) {
@@ -112,6 +120,7 @@ static void get_container_processes_info(struct seq_file *m) {
                 vsz = mm->total_vm << PAGE_SHIFT;
                 // vszKB = vsz / 1024;
             }
+            // unsigned long uptime = get_b
             unsigned long total_ram_pages;
             total_ram_pages = totalram_pages();
             if(found){
@@ -119,9 +128,10 @@ static void get_container_processes_info(struct seq_file *m) {
             }
 
             unsigned long total_time = task->utime + task->stime;
-            cpu_usage = (total_time * 10000) / total_jiffies;
                 
-            
+            unsigned long total_time_children = 0;
+            unsigned long start_time_children = 0;
+            int count = 0;
             if(task->children.next != NULL){
                 struct task_struct *child;
                 list_for_each_entry(child, &task->children, sibling){
@@ -129,22 +139,34 @@ static void get_container_processes_info(struct seq_file *m) {
                     if(mm_child){
                         rss += get_mm_rss(mm_child) << PAGE_SHIFT;
                         vsz += mm_child->total_vm << PAGE_SHIFT;
-                    }
-                    unsigned long total_time_child = child->utime + child->stime;
-                    // total_time_child /= HZ;
-                    cpu_usage_child = (total_time_child * 10) / (total_jiffies);
-                    cpu_usage += cpu_usage_child;
+                    }   
+
+                    total_time_children += (child->utime/(HZ*1000) + child->stime/(HZ*1000));
+                    // total_time_children /= HZ;
+                    // seq_printf(m, "%s\n", get_process_cmdline(child));
+                    // seq_printf(m, "%d\n", child->pid);
+                    start_time_children = child->start_time;
+                    start_time_children /= HZ*100000;
+                    start_time_children /= 10;
+                    // cpu_usage += cpu_usage_child;
                     // cpu_usage = (total_time_child * 10000) / (total_jiffies);
                     // seq_printf(m, "%s", get_process_cmdline(child));
+                    count++;
                 }
-                
+              
             }
+            cpu_usage_child = (total_time_children * 10) / ((ktime_get_boottime_seconds())-start_time_children);
+            // unsigned long total_time_all = total_time + total_time_children;
+            // seq_printf(m, "jiffies -> %lld\n", ktime_get_boottime_seconds());
+            // seq_printf(m, "start -> %ld\n", start_time_children);
+            cpu_usage = (total_time * 10000) / total_jiffies;
+            cpu_usage += cpu_usage_child;
             rssKB = rss / 1024;
             vszKB = vsz / 1024;
 
-            if(found){
-                seq_printf(m, ",\n");
-            }
+            // if(found){
+            //     seq_printf(m, ",\n");
+            // }
             
             seq_printf(m, "\t\t{\n");
             seq_printf(m, "\t\t\t\"pid\": %d,\n", task->pid);
