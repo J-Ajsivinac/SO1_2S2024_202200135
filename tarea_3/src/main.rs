@@ -9,7 +9,7 @@ use analyzer::{analyzer};
 
 fn main() {
     let system_info: Result<SystemInfo, _>;
-    let json_str = read_proc_file("sysinfo").unwrap();
+    let json_str = read_proc_file("sysinfo_202200135").unwrap();
     system_info = parser_proc_to_struct(&json_str);
 
     match system_info{

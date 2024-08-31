@@ -5,4 +5,4 @@ RUN pip install flask
 
 COPY low2.py /low2.py
 
-CMD ["python", "/low.py"]
+CMD ["python", "/low2.py"]

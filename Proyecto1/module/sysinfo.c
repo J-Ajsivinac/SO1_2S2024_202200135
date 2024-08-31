@@ -13,7 +13,7 @@
 #include <linux/time64.h>
 
 // sysinfo_202200135
-#define FILE_NAME "sysinfo"
+#define FILE_NAME "sysinfo_202200135"
 #define MAX_CMDLINE_LENGTH 1000
 
 

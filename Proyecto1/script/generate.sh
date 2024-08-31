@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Lista de imágenes base
-images=("cpu-high" "ram-high")
+images=("cpu-high" "ram-high" "cpu-low" "ram-low")
 
 # Función para generar un nombre único de contenedor
 generate_container_name() {
