@@ -24,13 +24,13 @@ pub struct Process {
     pub rss: i32,
 }
 
-// pub struct LogProcess{
-//     pub pid: i32,
-//     pub container_id: String,
-//     pub name: String,
-//     pub cpu_usage: f32,
-//     pub memory_usage: f32,
-// }
+pub struct LogProcess{
+    pub pid: i32,
+    pub container_id: String,
+    pub name: String,
+    pub cpu_usage: f32,
+    pub memory_usage: f32,
+}
 
 impl Process {
     pub fn get_container_id(&self) -> &str {
