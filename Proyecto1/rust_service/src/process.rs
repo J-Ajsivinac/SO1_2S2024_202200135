@@ -24,6 +24,7 @@ pub struct Process {
     pub rss: i32,
 }
 
+#[derive(Debug, Serialize, Clone)]
 pub struct LogProcess{
     pub pid: i32,
     pub container_id: String,
