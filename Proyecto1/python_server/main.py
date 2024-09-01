@@ -5,6 +5,7 @@ import json
 from typing import List
 from models.models import LogProcess
 import matplotlib.pyplot as plt
+import pandas as pd
 
 app = FastAPI()
 
@@ -54,31 +55,26 @@ def get_graph():
     time_stamps = list(set([log["timestamp"] for log in existing_logs]))
     
     # agrupar los logs del mismo time_stamp
-    grouped_logs = {}
-    for time_stamp in time_stamps:
-        grouped_logs[time_stamp] = [log for log in existing_logs if log["timestamp"] == time_stamp]
+    df = pd.DataFrame(existing_logs) 
+    df['timestamp'] = pd.to_datetime(df['timestamp'])
 
-    # memory_usage = [log["timestamp"] for log in grouped_logs]
+    plt.figure(figsize=(10, 6))
+    for container_id, group in df.groupby('container_id'):
+        # group = group.sort_values('timestamp')
+        # plt.plot(group['timestamp'], group['memory_usage'], label=container_id)
+        plt.plot(group['timestamp'], group['cpu_usage'], marker='o', label=f'CPU - {container_id}')
+    # output_path = 'home/ajsivinac/Documentos/memory_usage_graph.png'
+    # plt.savefig(output_path)
+    plt.xlabel('Timestamp')
+    plt.ylabel('CPU Usage')
+    plt.title('CPU Usage by Container')
+    plt.legend(loc='upper left', bbox_to_anchor=(1, 1.06))
+    plt.tight_layout(rect=[0, 0, 0.85, 1])  # Deja espacio a la derecha
 
-    # obtjener el procentaje de uso por fechas
-    memory_usage = []
-    for time_stamp in time_stamps:
-        logs = grouped_logs[time_stamp]
-        total_memory = sum([log["memory_usage"] for log in logs])
-        memory_usage.append(total_memory)
-
-    # plt.figure(figsize=(10, 5))
-    # plt.plot(time_stamps, memory_usage, marker='o', linestyle='-', color='b')
-    # plt.xlabel('Timestamp')
-    # plt.ylabel('Memory Usage (%)')
-    # plt.title('Memory Usage Over Time')
-    # plt.grid(True)
-    # plt.xticks(rotation=45)
-    # plt.tight_layout()
-
-    output_path = 'home/ajsivinac/Documentos/memory_usage_graph.png'
-    plt.savefig(output_path)
+    plt.grid(True)
+    # output_path = 'home/ajsivinac/Documentos/memory_usage_graph.png'
+    plt.savefig('cpu_usage_graph.png')
 
 # Cerrar la figura para liberar memoria
     plt.close()
-    return {"received": memory_usage}
+    return {"received": "True", "output_path": "output_path"}
