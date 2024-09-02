@@ -1,16 +1,17 @@
 use crate::process::{SystemInfo,Process,LogProcess};
-// use crate process::{};
+use crate::request::send_process; 
+use std::error::Error;
+use chrono::prelude::*;
 
-pub fn analyzer( system_info:  SystemInfo) {
+pub async fn analyzer(system_info: SystemInfo) -> Result<(), Box<dyn Error>> {
     let mut processes_list: Vec<Process> = system_info.processes;
     
     processes_list.sort();
     let mut log_proc_list: Vec<LogProcess> = Vec::new();
     // filtrar contenedores de alto y bajo consumo (alto consumo > 1%)
-
-    // let mut highest_list: Vec<Process> = Vec::new();
-    // let mut lowest_list: Vec<Process> = Vec::new();
-
+    let now_utc: DateTime<Utc> = Utc::now();
+    let formatted_date = now_utc.to_rfc3339();
+    
     let (highest_list, lowest_list): (Vec<Process>, Vec<Process>) = processes_list
     .into_iter()
     .partition(|process| process.cpu_usage > 1.3 || process.memory_usage > 2.0);
@@ -32,8 +33,12 @@ pub fn analyzer( system_info:  SystemInfo) {
                 pid: process.pid,
                 container_id: process.get_container_id().to_string(),
                 name: process.name.clone(),
+                vsz: process.vsz,
+                rss: process.rss,
                 memory_usage: process.memory_usage,
                 cpu_usage: process.cpu_usage,
+                action: "stop".to_string(),
+                timestamp: formatted_date.to_string()
             };
     
             log_proc_list.push(log_process.clone());
@@ -52,8 +57,12 @@ pub fn analyzer( system_info:  SystemInfo) {
                 pid: process.pid,
                 container_id: process.get_container_id().to_string(),
                 name: process.name.clone(),
+                vsz: process.vsz,
+                rss: process.rss,
                 memory_usage: process.memory_usage,
-                cpu_usage: process.cpu_usage
+                cpu_usage: process.cpu_usage,
+                action: "stop".to_string(),
+                timestamp: formatted_date.to_string()
             };
     
             log_proc_list.push(log_process.clone());
@@ -65,21 +74,23 @@ pub fn analyzer( system_info:  SystemInfo) {
     }
 
     println!("Contenedores matados");
-    for process in log_proc_list {
+    for process in &log_proc_list {
         println!("PID: {}, Name: {}, Container ID: {}, Memory Usage: {}, CPU Usage: {} ", process.pid, process.name, process.container_id,  process.memory_usage, process.cpu_usage);
     }
 
     println!("------------------------------");
 
-    
+    let end_url: &str = "logs";
+    send_process(log_proc_list,end_url).await?;
+    Ok(())  
 }
 
-pub fn stop_container(id: &str) -> std::process::Output {
-    let output = std::process::Command::new("docker")
-        .arg("stop")
-        .arg(id)
-        .output()
-        .expect("failed to execute process");
-    println!("Contenendor {} matado", id);
-    return output;
-}
+// pub fn stop_container(id: &str) -> std::process::Output {
+//     let output = std::process::Command::new("docker")
+//         .arg("stop")
+//         .arg(id)
+//         .output()
+//         .expect("failed to execute process");
+//     println!("Contenendor {} matado", id);
+//     return output;
+// }

@@ -29,8 +29,12 @@ pub struct LogProcess{
     pub pid: i32,
     pub container_id: String,
     pub name: String,
-    pub cpu_usage: f32,
+    pub vsz: i32,
+    pub rss: i32,
     pub memory_usage: f32,
+    pub cpu_usage: f32,
+    pub action: String,
+    pub timestamp: String,
 }
 
 impl Process {
