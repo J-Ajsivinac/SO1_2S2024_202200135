@@ -32,11 +32,11 @@ def get_logs(logs_proc: List[LogProcess]):
     new_logs = [log.dict() for log in logs_proc]
     existing_logs.extend(new_logs)
 
-    # Escribimos la lista de logs en el archivo logs.json
-    with open(logs_file, 'w') as file:
-        json.dump(existing_logs, file, indent=4)
+    # # Escribimos la lista de logs en el archivo logs.json
+    # with open(logs_file, 'w') as file:
+    #     json.dump(existing_logs, file, indent=4)
 
-    return {"received": True}
+    return {"received": existing_logs}
 
 @app.get("/graph")
 def get_graph():
