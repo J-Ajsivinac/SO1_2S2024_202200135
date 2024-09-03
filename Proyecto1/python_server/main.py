@@ -70,7 +70,7 @@ def get_graph():
     plt.ylabel('Tiempo')
     plt.grid(True)
     plt.savefig('memory_usage_graph.png', dpi=300)
-    plt.close()
+    plt.close() 
     return {"message": "Graph created"}
 
 
