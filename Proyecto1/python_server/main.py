@@ -1,12 +1,11 @@
-import datetime
-from fastapi import FastAPI # type: ignore
 import os
 import json
-from typing import List
-from models.models import LogProcess
-import matplotlib.pyplot as plt
 import pandas as pd
-
+import seaborn as sns
+import matplotlib.pyplot as plt
+from typing import List
+from fastapi import FastAPI # type: ignore
+from models.models import LogProcess
 app = FastAPI()
 
 
@@ -42,39 +41,46 @@ def get_logs(logs_proc: List[LogProcess]):
 def get_graph():
     logs_file = 'logs/logs.json'
     
-    # Checamos si existe el archivo logs.json
     if os.path.exists(logs_file):
-        # Leemos el archivo logs.json
         with open(logs_file, 'r') as file:
             existing_logs = json.load(file)
     else:
-        # Sino existe, creamos una lista vacía
         existing_logs = []
 
-    # Obtenemos los time_stamps de los logs (solo los que no se repiten)
-    time_stamps = list(set([log["timestamp"] for log in existing_logs]))
+    df = pd.DataFrame(existing_logs)
+    df["timestamp"] = pd.to_datetime(df["timestamp"]).dt.strftime('%Y-%m-%d %H:%M:%S')
+    df_heatmap = df.groupby(['timestamp', 'container_id'])['cpu_usage'].mean().unstack()
     
-    # agrupar los logs del mismo time_stamp
-    df = pd.DataFrame(existing_logs) 
-    df['timestamp'] = pd.to_datetime(df['timestamp'])
-
-    plt.figure(figsize=(10, 6))
-    for container_id, group in df.groupby('container_id'):
-        # group = group.sort_values('timestamp')
-        # plt.plot(group['timestamp'], group['memory_usage'], label=container_id)
-        plt.plot(group['timestamp'], group['cpu_usage'], marker='o', label=f'CPU - {container_id}')
-    # output_path = 'home/ajsivinac/Documentos/memory_usage_graph.png'
-    # plt.savefig(output_path)
-    plt.xlabel('Timestamp')
-    plt.ylabel('CPU Usage')
-    plt.title('CPU Usage by Container')
-    plt.legend(loc='upper left', bbox_to_anchor=(1, 1.06))
-    plt.tight_layout(rect=[0, 0, 0.85, 1])  # Deja espacio a la derecha
-
+    plt.style.use('dark_background')
+    sns.heatmap(df_heatmap, cmap=sns.cubehelix_palette(as_cmap=True), annot=True, fmt=".2f", linewidth=0.5)
+    plt.title('Heatmap de uso de CPU')
+    plt.xlabel('Container ID')
+    plt.ylabel('Tiempo')
     plt.grid(True)
-    # output_path = 'home/ajsivinac/Documentos/memory_usage_graph.png'
-    plt.savefig('cpu_usage_graph.png')
-
-# Cerrar la figura para liberar memoria
+    plt.savefig('cpu_usage_graph.png', dpi=300)
     plt.close()
-    return {"received": "True", "output_path": "output_path"}
+
+    # Heatmap de uso de memoria
+    df_memory_heatmap = df.groupby(['timestamp', 'container_id'])['memory_usage'].mean().unstack()
+    plt.figure(figsize=(10, 6))
+    plt.style.use('dark_background')
+    sns.heatmap(df_memory_heatmap, cmap=sns.cubehelix_palette(as_cmap=True), annot=True, fmt=".2f", linewidths=0.5)
+    plt.title('Heatmap de uso de Memoria')
+    plt.xlabel('Container ID')
+    plt.ylabel('Tiempo')
+    plt.grid(True)
+    plt.savefig('memory_usage_graph.png', dpi=300)
+    plt.close()
+    return {"message": "Graph created"}
+
+
+def gen_image(data, type):
+    df_heatmap = data.groupby(['timestamp', 'container_id'])[type].mean().unstack()
+    plt.style.use('dark_background')
+    sns.heatmap(df_heatmap, cmap=sns.cubehelix_palette(as_cmap=True), annot=True, fmt=".2f", linewidths=0.5)
+    plt.title(f'Heatmap de uso de {type}')
+    plt.xlabel('Container ID')
+    plt.ylabel('Tiempo')
+    plt.grid(True)
+    plt.savefig(f'{type}_usage_graph.png', dpi=300)
+    plt.close()
