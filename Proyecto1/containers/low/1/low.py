@@ -1,11 +1,6 @@
-# Script de bajo consumo usando Flask
-from flask import Flask
+import time
 
-app = Flask(__name__)
+print("Hello, World!")
 
-@app.route('/')
-def hello_world():
-    return 'Hello, World!'
-
-if __name__ == '__main__':
-    app.run(host='0.0.0.0')
+while True:
+    time.sleep(70) 

@@ -5,4 +5,4 @@ small_list = [0] * 10  # Lista muy pequeña
 
 # Mantener el programa en ejecución para que puedas observar el consumo
 while True:
-    time.sleep(10)
+    time.sleep(60)
