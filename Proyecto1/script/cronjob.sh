@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Define cronjob
-script_path="$(pwd)/generate.sh"
+script_path="$(dirname "$(realpath "$0")")/generate.sh"
 cronjob="* * * * * $script_path"
 
 (crontab -l 2>/dev/null; echo "$cronjob") | crontab -
