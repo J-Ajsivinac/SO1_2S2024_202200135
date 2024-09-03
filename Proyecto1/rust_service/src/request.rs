@@ -15,8 +15,8 @@ pub async fn send_process(process_list: Vec<LogProcess>,url:&str)-> Result<(), B
         .await?;
 
     if res.status().is_success(){
-        let response = res.text().await?;
-        println!("Procesos enviados correctamente {}", response);
+        // let response = res.text().await?;
+        println!("Procesos enviados correctamente");
     } else {
         println!("Error al enviar procesos {} ",res.status());
     }
