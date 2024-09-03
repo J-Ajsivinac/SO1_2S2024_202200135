@@ -1,7 +1,7 @@
 use crate::process::{SystemInfo,Process,LogProcess};
 use crate::request::send_process; 
 use std::error::Error;
-use chrono::prelude::*;
+use chrono::{DateTime, Utc, Local};
 
 pub async fn analyzer(system_info: SystemInfo) -> Result<(), Box<dyn Error>> {
     let mut processes_list: Vec<Process> = system_info.processes;
@@ -10,11 +10,12 @@ pub async fn analyzer(system_info: SystemInfo) -> Result<(), Box<dyn Error>> {
     let mut log_proc_list: Vec<LogProcess> = Vec::new();
     // filtrar contenedores de alto y bajo consumo (alto consumo > 1%)
     let now_utc: DateTime<Utc> = Utc::now();
-    let formatted_date = now_utc.to_rfc3339();
+    let now_gt = now_utc.with_timezone(&Local::now().timezone());
+    let formatted_date = now_gt.to_rfc3339();
     
     let (highest_list, lowest_list): (Vec<Process>, Vec<Process>) = processes_list
     .into_iter()
-    .partition(|process| process.cpu_usage > 1.3 || process.memory_usage > 2.0);
+    .partition(|process| process.cpu_usage > 0.6 || process.memory_usage > 2.0);
 
     println!("Contenedores de alto consumo");
     for process in &highest_list {
