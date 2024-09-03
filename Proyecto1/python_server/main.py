@@ -9,13 +9,17 @@ from models.models import LogProcess
 
 def gen_image(data, type):
     type_name = 'CPU' if type == 'cpu_usage' else 'Memoria'
+    data['container_id'] = data['container_id'].str[:12]
     df_heatmap = data.groupby(['timestamp', 'container_id'])[type].mean().unstack()
     plt.style.use('dark_background')
-    sns.heatmap(df_heatmap, cmap=sns.cubehelix_palette(as_cmap=True), annot=True, fmt=".2f", linewidths=0.5)
+    print(len(df_heatmap))
+    plt.figure(figsize=(2*len(df_heatmap.columns), 2.2*len(df_heatmap)))
+    plt.tight_layout()
+    sns.heatmap(df_heatmap, cmap=sns.cubehelix_palette(as_cmap=True), annot=True, fmt=".2f", linewidths=0.5, square=False)
     plt.title(f'Heatmap de uso de {type_name}')
     plt.xlabel('Container ID')
     plt.ylabel('Tiempo')
-    plt.grid(True)
+    # plt.grid(True)
     plt.savefig(f'{type}_graph.png', dpi=300)
     plt.close()
 
