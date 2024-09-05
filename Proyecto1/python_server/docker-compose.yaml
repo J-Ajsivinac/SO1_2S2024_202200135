@@ -6,4 +6,5 @@ services:
       - "8000:8000"
     volumes:
       - ./logs:/code/logs
+      - ./imgs:/code/imgs
     command: ["fastapi", "run", "main.py", "--port", "8000"]

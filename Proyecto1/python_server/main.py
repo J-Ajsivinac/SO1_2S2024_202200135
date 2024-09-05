@@ -20,7 +20,15 @@ def gen_heatmap(data, type):
     plt.xlabel('Container ID')
     plt.ylabel('Tiempo')
     # plt.grid(True)
-    plt.savefig(f'{type}_graph.png', dpi=300)
+
+    # Guardamos la gráfica en la carpeta imgs
+
+    # verificamos si la carpeta imgs existe
+    if not os.path.exists('./imgs'):
+        # si no existe, la creamos
+        os.makedirs('./imgs')
+
+    plt.savefig(f'./imgs/{type}_graph.png', dpi=300)
     plt.close()
 
 def get_bar(data, type):
@@ -34,7 +42,15 @@ def get_bar(data, type):
     plt.title(f'Suma de {type_name} por tiempo')
     plt.xlabel(f'% {type_name}')
     plt.ylabel('Tiempo')
-    plt.savefig(f'{type_name}_graph.png', dpi=300)
+
+    # Guardamos la gráfica en la carpeta imgs
+
+    # verificamos si la carpeta imgs existe
+    if not os.path.exists('./imgs'):
+        # si no existe, la creamos
+        os.makedirs('./imgs')
+        
+    plt.savefig(f'./imgs/{type_name}_graph.png', dpi=300)
     plt.close()
 
 app = FastAPI()
