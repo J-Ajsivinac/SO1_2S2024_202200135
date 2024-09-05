@@ -7,7 +7,7 @@ from typing import List
 from fastapi import FastAPI # type: ignore
 from models.models import LogProcess
 
-def gen_image(data, type):
+def gen_heatmap(data, type):
     type_name = 'CPU' if type == 'cpu_usage' else 'Memoria'
     data['container_id'] = data['container_id'].str[:12]
     df_heatmap = data.groupby(['timestamp', 'container_id'])[type].mean().unstack()
@@ -21,6 +21,20 @@ def gen_image(data, type):
     plt.ylabel('Tiempo')
     # plt.grid(True)
     plt.savefig(f'{type}_graph.png', dpi=300)
+    plt.close()
+
+def get_bar(data, type):
+    type_name = 'CPU' if type == 'cpu_usage' else 'Memoria'
+    data_grouped = data.groupby('timestamp').agg({f'{type}': 'sum'}).reset_index()
+
+    plt.figure(figsize=(7.5*len(data_grouped.columns), 2.3*len(data_grouped)))
+    plt.tight_layout()
+    plt.barh(data_grouped['timestamp'], data_grouped[type], color='#a7aff1')
+
+    plt.title(f'Suma de {type_name} por tiempo')
+    plt.xlabel(f'% {type_name}')
+    plt.ylabel('Tiempo')
+    plt.savefig(f'{type_name}_graph.png', dpi=300)
     plt.close()
 
 app = FastAPI()
@@ -66,8 +80,13 @@ def get_graph():
     df["timestamp"] = pd.to_datetime(df["timestamp"]).dt.strftime('%Y-%m-%d %H:%M:%S')
     
     # Heatmap de uso de CPU
-    gen_image(df, 'cpu_usage')
+    gen_heatmap(df, 'cpu_usage')
     # Heatmap de uso de memoria
-    gen_image(df, 'memory_usage')
+    gen_heatmap(df, 'memory_usage')
+
+    # Gráfica de barras de uso de CPU
+    get_bar(df, 'cpu_usage')
+    # Gráfica de barras de uso de memoria
+    get_bar(df, 'memory_usage')
 
     return {"message": "Graph created"}
