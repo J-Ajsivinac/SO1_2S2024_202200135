@@ -22,8 +22,7 @@ pub fn start_cronjob(path: &str) -> std::process::Child {
 }
 
 pub fn stop_cronjob() -> std::process::Output {
-    let output = std::process::Command::new("sh")
-        .arg("crontab")
+    let output = std::process::Command::new("crontab")
         .arg("-r")
         .output()
         .expect("failed to execute cronjob");
