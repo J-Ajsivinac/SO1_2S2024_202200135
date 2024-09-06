@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 from typing import List
 from fastapi import FastAPI # type: ignore
 from models.models import LogProcess
+from fastapi.responses import JSONResponse
 
 def gen_heatmap(data, type):
     type_name = 'CPU' if type == 'cpu_usage' else 'Memoria'
@@ -91,7 +92,13 @@ def get_graph():
             existing_logs = json.load(file)
     else:
         existing_logs = []
-
+        response = {"message": "No logs found"}
+        return JSONResponse(content=response, status_code=404)
+    
+    if existing_logs == []:
+        response = {"message": "No logs found"}
+        return JSONResponse(content=response, status_code=404)
+    
     df = pd.DataFrame(existing_logs)
     df["timestamp"] = pd.to_datetime(df["timestamp"]).dt.strftime('%Y-%m-%d %H:%M:%S')
     
