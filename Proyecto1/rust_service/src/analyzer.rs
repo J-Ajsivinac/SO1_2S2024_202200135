@@ -2,8 +2,9 @@ use crate::process::{SystemInfo,Process,LogProcess};
 use crate::request::send_process; 
 use std::error::Error;
 use chrono::{DateTime, Utc, Local};
+use std::process::{Stdio};
 
-pub async fn analyzer(system_info: SystemInfo) -> Result<(), Box<dyn Error>> {
+pub async fn analyzer(system_info: SystemInfo, id_logs:&str) -> Result<(), Box<dyn Error>> {
     let mut processes_list: Vec<Process> = system_info.processes;
     
     processes_list.sort();
@@ -44,8 +45,10 @@ pub async fn analyzer(system_info: SystemInfo) -> Result<(), Box<dyn Error>> {
     
             log_proc_list.push(log_process.clone());
 
-            // Matamos el contenedor.
-            // let _output = kill_container(&process.get_container_id());
+            if !process.get_container_id().to_string().starts_with(&id_logs) {
+                // Matamos el contenedor.
+                let _output = stop_container(&process.get_container_id());
+            }
 
         }
     } 
@@ -68,6 +71,10 @@ pub async fn analyzer(system_info: SystemInfo) -> Result<(), Box<dyn Error>> {
     
             log_proc_list.push(log_process.clone());
 
+            if !log_process.container_id.starts_with(&id_logs) {
+                // Matamos el contenedor.
+                let _output = stop_container(&process.get_container_id());
+            }
             // Matamos el contenedor.
             // let _output = kill_container(&process.get_container_id());
 
@@ -82,16 +89,21 @@ pub async fn analyzer(system_info: SystemInfo) -> Result<(), Box<dyn Error>> {
     println!("------------------------------");
 
     let end_url: &str = "logs";
+    println!("Enviando procesos al servidor");
     send_process(log_proc_list,end_url).await?;
     Ok(())  
 }
 
-// pub fn stop_container(id: &str) -> std::process::Output {
-//     let output = std::process::Command::new("docker")
-//         .arg("stop")
-//         .arg(id)
-//         .output()
-//         .expect("failed to execute process");
-//     println!("Contenendor {} matado", id);
-//     return output;
-// }
+pub fn stop_container(id: &str) -> std::process::Child {
+    println!("Matando contenedor {}", id);
+    let output = std::process::Command::new("docker")
+        .arg("stop")
+        .arg(id)
+        .stdin(Stdio::null())
+        .stdout(Stdio::null())
+        .stderr(Stdio::null())
+        .spawn()
+        .expect("failed to execute process");
+    println!("Contenendor {} matado", id);
+    return output;
+}
