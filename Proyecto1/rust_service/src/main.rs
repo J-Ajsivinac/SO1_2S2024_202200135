@@ -5,7 +5,7 @@ mod request;
 mod init;
 
 use utils::{read_proc_file, parser_proc_to_struct};
-use process::{SystemInfo};
+use process::{SystemInfo,Memory};
 use analyzer::{analyzer};
 use std::env;
 use init::{start_module,start_cronjob,start_logs_server,get_logs_id,stop_cronjob};
@@ -54,7 +54,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         });
         stop_cronjob();
         r.store(false, Ordering::SeqCst);
-        std::thread::sleep(std::time::Duration::from_secs(2));
+        
+        std::thread::sleep(std::time::Duration::from_secs(10));
 
     }).expect("Error setting Ctrl-C handler");
     // start_module();
@@ -68,6 +69,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
         match system_info {
             Ok(info) => {
+
+                print_memory(&info.memory);
                 analyzer(info,&id_container_logs).await?;
             }
             Err(e) => {
@@ -79,4 +82,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     println!("Exiting main loop.");
     Ok(())
+}
+
+fn print_memory(memory: &Memory){
+    println!();
+    println!(" ╔═════════════════╦═══════════════════╦═══════════════════╗");
+    println!(" ║ RAM Total (KB)  ║ RAM Libre (KB)    ║ RAM Usada (KB)    ║");
+    println!(" ╠═════════════════╬═══════════════════╬═══════════════════╣");
+    println!(" ║ {:<14}  ║ {:<16}  ║ {:<16}  ║", memory.total_ram, memory.free_ram, memory.used_ram);
+    println!(" ╚═════════════════╩═══════════════════╩═══════════════════╝");
+    println!();
 }

@@ -17,17 +17,12 @@ pub async fn analyzer(system_info: SystemInfo, id_logs:&str) -> Result<(), Box<d
     let (highest_list, lowest_list): (Vec<Process>, Vec<Process>) = processes_list
     .into_iter()
     .partition(|process| process.cpu_usage > 0.6 || process.memory_usage > 2.0);
+    
+    println!(" * {}",&formatted_date);
 
-    println!("Contenedores de alto consumo");
-    for process in &highest_list {
-        println!("container_id: {}, CPU Usage: {}, Memory Usage: {}", process.get_container_id(), process.cpu_usage, process.memory_usage);
-    }
+    print_table("Contenedores de alto consumo", &highest_list);
 
-    println!("------------------------------");
-    println!("Contenedores de bajo consumo");
-    for process in &lowest_list {
-        println!("container_id: {}, CPU Usage: {}, Memory Usage: {}", process.get_container_id(), process.cpu_usage, process.memory_usage);
-    }
+    print_table("Contenedores de bajo consumo", &lowest_list);
     
     if lowest_list.len() > 3 {
         for process in lowest_list.iter().skip(3) {
@@ -43,10 +38,10 @@ pub async fn analyzer(system_info: SystemInfo, id_logs:&str) -> Result<(), Box<d
                 timestamp: formatted_date.to_string()
             };
     
-            log_proc_list.push(log_process.clone());
-
+            
             if !process.get_container_id().to_string().starts_with(&id_logs) {
                 // Matamos el contenedor.
+                log_proc_list.push(log_process.clone());
                 let _output = stop_container(&process.get_container_id());
             }
 
@@ -69,10 +64,10 @@ pub async fn analyzer(system_info: SystemInfo, id_logs:&str) -> Result<(), Box<d
                 timestamp: formatted_date.to_string()
             };
     
-            log_proc_list.push(log_process.clone());
-
+            
             if !log_process.container_id.starts_with(&id_logs) {
                 // Matamos el contenedor.
+                log_proc_list.push(log_process.clone());
                 let _output = stop_container(&process.get_container_id());
             }
             // Matamos el contenedor.
@@ -81,12 +76,7 @@ pub async fn analyzer(system_info: SystemInfo, id_logs:&str) -> Result<(), Box<d
         }
     }
 
-    println!("Contenedores matados");
-    for process in &log_proc_list {
-        println!("PID: {}, Name: {}, Container ID: {}, Memory Usage: {}, CPU Usage: {} ", process.pid, process.name, process.container_id,  process.memory_usage, process.cpu_usage);
-    }
-
-    println!("------------------------------");
+    print_table_logs("Procesos a matar", &log_proc_list);
 
     let end_url: &str = "logs";
     println!("Enviando procesos al servidor");
@@ -95,7 +85,6 @@ pub async fn analyzer(system_info: SystemInfo, id_logs:&str) -> Result<(), Box<d
 }
 
 pub fn stop_container(id: &str) -> std::process::Child {
-    println!("Matando contenedor {}", id);
     let output = std::process::Command::new("docker")
         .arg("stop")
         .arg(id)
@@ -104,6 +93,35 @@ pub fn stop_container(id: &str) -> std::process::Child {
         .stderr(Stdio::null())
         .spawn()
         .expect("failed to execute process");
-    println!("Contenendor {} matado", id);
     return output;
+}
+
+fn print_table(title: &str,processes: &Vec<Process>) {
+    println!();
+    println!(" ╔═══════════════════════════════════════════════════════════════════════════════════════════════╗");
+    println!(" ║ {:^93} ║", title);
+    println!(" ╠═════════╦═══════════════════════════════════════════════════════════════════╦════════╦════════╣");
+    println!(" ║ {:<7} ║ {:<65} ║ {:<6} ║ {:<6} ║", "PID", "Container ID", "CPU", "Memory");
+    println!(" ╠═════════╬═══════════════════════════════════════════════════════════════════╬════════╬════════╣");
+    for process in processes {
+        println!(" ║ {:<7} ║ {:<65} ║ {:<6} ║ {:<6} ║", process.pid, process.get_container_id(), process.cpu_usage, process.memory_usage);
+    }
+    println!(" ╚═════════╩═══════════════════════════════════════════════════════════════════╩════════╩════════╝");
+
+    println!();
+}
+
+fn print_table_logs(title: &str,log_proc_list: &Vec<LogProcess>) {
+    println!();
+    println!(" ╔═══════════════════════════════════════════════════════════════════════════════════════════════╗");
+    println!(" ║ {:^93} ║", title);
+    println!(" ╠═════════╦═══════════════════════════════════════════════════════════════════╦════════╦════════╣");
+    println!(" ║ {:<7} ║ {:<65} ║ {:<6} ║ {:<6} ║", "PID", "Container ID", "CPU", "Memory");
+    println!(" ╠═════════╬═══════════════════════════════════════════════════════════════════╬════════╬════════╣");
+    for process in log_proc_list {
+        println!(" ║ {:<7} ║ {:<65} ║ {:<6} ║ {:<6} ║", process.pid, process.container_id, process.cpu_usage, process.memory_usage);
+    }
+    println!(" ╚═════════╩═══════════════════════════════════════════════════════════════════╩════════╩════════╝");
+
+    println!();
 }

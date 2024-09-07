@@ -2,6 +2,8 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct SystemInfo {
+    #[serde(rename = "Memory")]
+    pub memory: Memory,
     #[serde(rename = "Processes")]
     pub processes: Vec<Process>,
 }
@@ -35,6 +37,13 @@ pub struct LogProcess{
     pub cpu_usage: f32,
     pub action: String,
     pub timestamp: String,
+}
+
+#[derive(Deserialize,Serialize, Debug)]
+pub struct Memory{
+    pub total_ram: i32,
+    pub free_ram: i32,
+    pub used_ram: i32,
 }
 
 impl Process {

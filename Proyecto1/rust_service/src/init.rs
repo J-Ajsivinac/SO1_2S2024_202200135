@@ -36,6 +36,7 @@ pub fn start_logs_server(path: &str) -> std::process::Child {
         .arg("-f")
         .arg(path)
         .arg("up")
+        .arg("-d")
         .stdin(Stdio::null())
         .stdout(Stdio::null())
         .stderr(Stdio::null())
