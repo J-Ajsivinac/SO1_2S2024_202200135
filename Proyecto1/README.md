@@ -289,9 +289,11 @@ pub fn stop_cronjob() -> std::process::Output {
 
 ![alt text](./imgs/image3.png)
 
-* **Graficas**
+* **Graficas Generadas**
 
 ![alt text](./imgs/CPU_graph.png)
 
 ![alt text](./imgs/Memoria_graph.png)
+
+![alt text](./imgs/process_graph.png)
 
