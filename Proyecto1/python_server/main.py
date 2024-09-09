@@ -47,7 +47,7 @@ def get_bar(data, type):
     data_grouped = data.groupby('timestamp').agg({f'{type}': 'sum'}).reset_index()
    
 
-    plt.figure(figsize=(5*len(data_grouped.columns), 2*len(data_grouped)))
+    plt.figure(figsize=(7*len(data_grouped.columns), 2*len(data_grouped)))
     plt.tight_layout()
     plt.barh(data_grouped['timestamp'], data_grouped[type], color='mediumpurple', edgecolor='black', linewidth=1.2)
 
@@ -111,7 +111,7 @@ def get_graph():
         return JSONResponse(content=response, status_code=404)
     
     df = pd.DataFrame(existing_logs)
-    df["timestamp"] = pd.to_datetime(df["timestamp"], utc=True)
+    df["timestamp"] = pd.to_datetime(df["timestamp"])
 
     df = df.sort_values(by='timestamp')   
 

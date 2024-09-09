@@ -17,7 +17,7 @@ pub async fn analyzer(system_info: SystemInfo, id_logs:&str) -> Result<(), Box<d
     // Excluir el proceso cuyo `container_id` coincida con `id_logs`
     let filtered_processes: Vec<Process> = processes_list
         .into_iter()
-        .filter(|process| process.get_container_id().to_string() != id_logs)
+        .filter(|process| !process.get_container_id().to_string().starts_with(&id_logs))
         .collect();
     
     // Particionar en listas de alto y bajo consumo
