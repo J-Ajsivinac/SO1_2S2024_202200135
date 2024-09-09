@@ -295,6 +295,3 @@ pub fn stop_cronjob() -> std::process::Output {
 
 ![alt text](./imgs/Memoria_graph.png)
 
-![alt text](./imgs/cpu_usage_graph.png)
-
-![alt text](./imgs/memory_usage_graph.png)
