@@ -99,8 +99,6 @@ AL ejecutarse se le pedira su contraseña de administrador para cargar el modulo
 
 El flujo de la aplicación es el siguiente:
 
- Aquí te presento una versión mejorada de tu manual técnico, con explicaciones para cada punto:
-
 ---
 
 ### 1. Inicia un Cronjob que genera 10 contenedores cada minuto
