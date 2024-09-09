@@ -7,43 +7,54 @@ from typing import List
 from fastapi import FastAPI # type: ignore
 from models.models import LogProcess
 from fastapi.responses import JSONResponse
+from collections import Counter
 
-def gen_heatmap(data, type):
-    type_name = 'CPU' if type == 'cpu_usage' else 'Memoria'
-    data['container_id'] = data['container_id'].str[:12]
-    df_heatmap = data.groupby(['timestamp', 'container_id'])[type].mean().unstack()
+def get_line(data, type):
+    # Contar la cantidad de procesos por timestamp
+    counter = Counter(data['timestamp'])
     plt.style.use('dark_background')
-    print(len(df_heatmap))
-    plt.figure(figsize=(2*len(df_heatmap.columns), 2.2*len(df_heatmap)))
     plt.tight_layout()
-    sns.heatmap(df_heatmap, cmap=sns.cubehelix_palette(as_cmap=True), annot=True, fmt=".2f", linewidths=0.5, square=False)
-    plt.title(f'Heatmap de uso de {type_name}')
-    plt.xlabel('Container ID')
-    plt.ylabel('Tiempo')
-    # plt.grid(True)
+    # Convertir a DataFrame para facilidad de uso con matplotlib
+    count_df = pd.DataFrame(counter.items(), columns=['timestamp', 'count'])
 
-    # Guardamos la gráfica en la carpeta imgs
+    # Ordenar por timestamp
+    count_df = count_df.sort_values(by='timestamp')
+    
+    # Graficar
+    plt.figure(figsize=(12*len(count_df.columns), 0.5*len(count_df)))
+    plt.plot(count_df['timestamp'], count_df['count'], color='darkviolet', marker='o', linestyle='-', linewidth=2, label='Number of Processes')
 
-    # verificamos si la carpeta imgs existe
+    # Agregar área de degradado debajo de la línea
+    plt.fill_between(count_df['timestamp'], count_df['count'], color='blueviolet', alpha=0.3)
+    plt.xlabel('Tiempo')
+    plt.ylabel('Numero de Procesos')
+    plt.title('Numero de Procesos por Tiempo')
+    # plt.grid()
+    plt.grid(axis='both', linestyle='--', alpha=0.6)
+
+    plt.xticks(rotation=70)
+    
+
     if not os.path.exists('./imgs'):
-        # si no existe, la creamos
+        # Si no existe, la creamos
         os.makedirs('./imgs')
 
-    plt.savefig(f'./imgs/{type}_graph.png', dpi=300)
+    plt.savefig(f'./imgs/{type}_graph.png', dpi=120, bbox_inches='tight')
     plt.close()
 
 def get_bar(data, type):
     type_name = 'CPU' if type == 'cpu_usage' else 'Memoria'
     data_grouped = data.groupby('timestamp').agg({f'{type}': 'sum'}).reset_index()
+   
 
-    plt.figure(figsize=(7.5*len(data_grouped.columns), 2.3*len(data_grouped)))
+    plt.figure(figsize=(5*len(data_grouped.columns), 2*len(data_grouped)))
     plt.tight_layout()
-    plt.barh(data_grouped['timestamp'], data_grouped[type], color='#a7aff1')
+    plt.barh(data_grouped['timestamp'], data_grouped[type], color='mediumpurple', edgecolor='black', linewidth=1.2)
 
     plt.title(f'Suma de {type_name} por tiempo')
-    plt.xlabel(f'% {type_name}')
+    plt.xlabel(f'Suma de %{type_name}')
     plt.ylabel('Tiempo')
-
+    plt.grid(axis='x', linestyle='--', alpha=0.6)
     # Guardamos la gráfica en la carpeta imgs
 
     # verificamos si la carpeta imgs existe
@@ -51,7 +62,7 @@ def get_bar(data, type):
         # si no existe, la creamos
         os.makedirs('./imgs')
         
-    plt.savefig(f'./imgs/{type_name}_graph.png', dpi=300)
+    plt.savefig(f'./imgs/{type_name}_graph.png', dpi=120)
     plt.close()
 
 app = FastAPI()
@@ -100,12 +111,13 @@ def get_graph():
         return JSONResponse(content=response, status_code=404)
     
     df = pd.DataFrame(existing_logs)
-    df["timestamp"] = pd.to_datetime(df["timestamp"]).dt.strftime('%Y-%m-%d %H:%M:%S')
-    
-    # Heatmap de uso de CPU
-    gen_heatmap(df, 'cpu_usage')
-    # Heatmap de uso de memoria
-    gen_heatmap(df, 'memory_usage')
+    df["timestamp"] = pd.to_datetime(df["timestamp"], utc=True)
+
+    df = df.sort_values(by='timestamp')   
+
+    df['timestamp'] = df['timestamp'].dt.strftime('%Y-%m-%d %H:%M:%S')
+
+    get_line(df, 'process')
 
     # Gráfica de barras de uso de CPU
     get_bar(df, 'cpu_usage')

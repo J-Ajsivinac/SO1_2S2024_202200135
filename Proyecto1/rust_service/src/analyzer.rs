@@ -14,9 +14,16 @@ pub async fn analyzer(system_info: SystemInfo, id_logs:&str) -> Result<(), Box<d
     let now_gt = now_utc.with_timezone(&Local::now().timezone());
     let formatted_date = now_gt.to_rfc3339();
     
-    let (highest_list, lowest_list): (Vec<Process>, Vec<Process>) = processes_list
-    .into_iter()
-    .partition(|process| process.cpu_usage > 0.6 || process.memory_usage > 2.0);
+    // Excluir el proceso cuyo `container_id` coincida con `id_logs`
+    let filtered_processes: Vec<Process> = processes_list
+        .into_iter()
+        .filter(|process| process.get_container_id().to_string() != id_logs)
+        .collect();
+    
+    // Particionar en listas de alto y bajo consumo
+    let (highest_list, lowest_list): (Vec<Process>, Vec<Process>) = filtered_processes
+        .into_iter()
+        .partition(|process| process.cpu_usage > 0.6 || process.memory_usage > 2.0);
     
     println!(" * {}",&formatted_date);
 
