@@ -49,7 +49,7 @@ def get_bar(data, type):
 
     plt.figure(figsize=(7*len(data_grouped.columns), 2*len(data_grouped)))
     plt.tight_layout()
-    plt.barh(data_grouped['timestamp'], data_grouped[type], color='mediumpurple', edgecolor='black', linewidth=1.2)
+    plt.bar(data_grouped['timestamp'], data_grouped[type], color='mediumpurple', edgecolor='black', linewidth=1.2)
 
     plt.title(f'Suma de {type_name} por tiempo')
     plt.xlabel(f'Suma de %{type_name}')
@@ -63,6 +63,22 @@ def get_bar(data, type):
         os.makedirs('./imgs')
         
     plt.savefig(f'./imgs/{type_name}_graph.png', dpi=120)
+    plt.close()
+
+def get_pie(data):
+    # Contar la frecuencia de cada tipo de acción
+    action_counts = data['action'].value_counts()
+
+    # Graficar
+    plt.figure(figsize=(8, 8))
+    colors = ['#c01e58', '#282f6c'] 
+    plt.pie(action_counts, labels=action_counts.index, autopct='%1.1f%%', startangle=90, colors=colors)
+    plt.title('Distribución de Contenedores por tipo')
+    
+    if not os.path.exists('./imgs'):
+        os.makedirs('./imgs')
+
+    plt.savefig(f'./imgs/action_pie_chart.png', dpi=120)
     plt.close()
 
 app = FastAPI()
@@ -123,5 +139,7 @@ def get_graph():
     get_bar(df, 'cpu_usage')
     # Gráfica de barras de uso de memoria
     get_bar(df, 'memory_usage')
+    # Gráfica de pastel de acciones
+    get_pie(df)
 
     return {"message": "Graph created"}

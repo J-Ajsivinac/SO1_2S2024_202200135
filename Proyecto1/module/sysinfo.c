@@ -126,7 +126,7 @@ static void get_container_processes_info(struct seq_file *m) {
             }
 
             unsigned long total_time = task->utime + task->stime;
-                
+
             unsigned long total_time_children = 0;
             unsigned long start_time_children = 0;
             int count = 0;
@@ -137,22 +137,22 @@ static void get_container_processes_info(struct seq_file *m) {
                     if(mm_child){
                         rss += get_mm_rss(mm_child) << PAGE_SHIFT;
                         vsz += mm_child->total_vm << PAGE_SHIFT;
-                    }   
+                    }
 
-                    total_time_children += (child->utime/(HZ*1000) + child->stime/(HZ*1000));
+                    total_time_children += (child->utime/(HZ*100) + child->stime/(HZ*100));
                     start_time_children = child->start_time;
                     start_time_children /= HZ*100000;
                     start_time_children /= 10;
                     count++;
                 }
-              
+
             }
-            cpu_usage_child = (total_time_children * 10) / ((ktime_get_boottime_seconds())-start_time_children);
+            cpu_usage_child = (total_time_children * 10) /( ktime_get_boottime_seconds()-start_time_children);
             cpu_usage = (total_time * 10000) / total_jiffies;
             cpu_usage += cpu_usage_child;
             rssKB = rss / 1024;
             vszKB = vsz / 1024;
-            
+
             seq_printf(m, "\t\t{\n");
             seq_printf(m, "\t\t\t\"pid\": %d,\n", task->pid);
             seq_printf(m, "\t\t\t\"name\": \"%s\",\n", task->comm);
@@ -161,7 +161,7 @@ static void get_container_processes_info(struct seq_file *m) {
             seq_printf(m, "\t\t\t\"rss\": %lu,\n", rssKB);
             porc_ram = (rss * 10000) / toal_ram;
             seq_printf(m, "\t\t\t\"memoryUsage\": %lu.%02lu,\n", porc_ram/100, porc_ram%100);
-            seq_printf(m, "\t\t\t\"cpuUsage\": %lu.%02lu\n", cpu_usage / 100, cpu_usage % 100);
+            seq_printf(m, "\t\t\t\"cpuUsage\": %lu.%02lu\n", cpu_usage / 100, cpu_usage % 100);            
             seq_printf(m, "\t\t}");
             found = true;
         }

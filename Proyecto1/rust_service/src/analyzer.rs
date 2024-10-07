@@ -41,7 +41,7 @@ pub async fn analyzer(system_info: SystemInfo, id_logs:&str) -> Result<(), Box<d
                 rss: process.rss,
                 memory_usage: process.memory_usage,
                 cpu_usage: process.cpu_usage,
-                action: "stop".to_string(),
+                action: "low".to_string(),
                 timestamp: formatted_date.to_string()
             };
     
@@ -67,7 +67,7 @@ pub async fn analyzer(system_info: SystemInfo, id_logs:&str) -> Result<(), Box<d
                 rss: process.rss,
                 memory_usage: process.memory_usage,
                 cpu_usage: process.cpu_usage,
-                action: "stop".to_string(),
+                action: "high".to_string(),
                 timestamp: formatted_date.to_string()
             };
     
