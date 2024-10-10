@@ -1,1 +1,26 @@
-[]
+[
+    {
+        "student": "John Doe",
+        "age": 20,
+        "faculty": "Ingenieria",
+        "discipline": 1
+    },
+    {
+        "student": "Jane Doe",
+        "age": 21,
+        "faculty": "Ingenieria",
+        "discipline": 2
+    },
+    {
+        "student": "John Smith",
+        "age": 22,
+        "faculty": "Agronomia",
+        "discipline": 3
+    },
+    {
+        "student": "Jane Smith",
+        "age": 23,
+        "faculty": "Ingenieria",
+        "discipline": 4
+    }
+]
