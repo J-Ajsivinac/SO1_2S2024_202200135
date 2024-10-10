@@ -1,0 +1,26 @@
+FROM golang:1.22.7 AS builder
+
+# Establecer el directorio de trabajo dentro del contenedor
+WORKDIR /app
+
+# Copiar el código Go al directorio de trabajo del contenedor
+COPY . .
+
+# Compilar el binario
+RUN go mod tidy
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o agronomia-service main.go
+
+# Etapa 2: Crear la imagen final
+FROM alpine:latest
+
+# Establecer el directorio de trabajo en el contenedor final
+WORKDIR /root/
+
+# Copiar el binario de la etapa de construcción
+COPY --from=builder /app/agronomia-service .
+
+# Exponer el puerto 8080
+EXPOSE 8080
+
+# Comando para ejecutar la aplicación
+CMD ["./agronomia-service"]

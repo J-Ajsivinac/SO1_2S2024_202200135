@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: agronomy-deployment
+  namespace: so1-proyecto2
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: agronomy-app
+  template:
+    metadata:
+      labels:
+        app: agronomy-app
+    spec:
+      containers:
+      - name: agronomy-app-container
+        image: jajsivianc/go-agronomy:1.0.0 # Aquí debes poner la imagen de tu aplicación en Go
+        ports:
+        - containerPort: 8080  # El puerto que tu aplicación en Go escucha
+        resources:
+          requests:
+            cpu: "0.2"
+            memory: "40Mi"
+          limits:
+            cpu: "0.2"
+            memory: "40Mi"
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: agronomy-service
+  namespace: so1-proyecto2  # Añadido para consistencia
+spec:
+  selector:
+    app: agronomy-app
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 8080
+  type: LoadBalancer

@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  creationTimestamp: null
+  name: so1-proyecto2
+spec: {}
+status: {}
