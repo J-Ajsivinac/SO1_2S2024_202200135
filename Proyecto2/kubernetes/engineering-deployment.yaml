@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ingenieria-deployment
+  namespace: so1-proyecto2
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: engineering-app
+  template:
+    metadata:
+      labels:
+        app: engineering-app
+    spec:
+      containers:
+      - name: engineering-app-container
+        image: jajsivianc/rust-engineering:1.0.0
+        ports:
+        - containerPort: 8081
+        resources:
+          requests:
+            cpu: "0.2"
+            memory: "40Mi"
+          limits:
+            cpu: "0.2"
+            memory: "40Mi"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: engineering-service
+  namespace: so1-proyecto2
+spec:
+  selector:
+    app: engineering-app
+  ports:
+    - protocol: TCP
+      port: 80  # Puerto accesible desde fuera del clúster
+      targetPort: 8081  # Puerto donde la aplicación escucha en el contenedor
+  type: LoadBalancer  # Puedes cambiarlo a NodePort o LoadBalancer si quieres exposición externa

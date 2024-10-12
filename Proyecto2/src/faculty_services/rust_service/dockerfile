@@ -1,0 +1,38 @@
+# Etapa 1: Compilar la aplicación
+FROM rust:1.81.0 AS builder
+
+# Crear un directorio de trabajo
+WORKDIR /app
+
+# Copiar los archivos de configuración de Rust
+COPY Cargo.toml Cargo.lock ./
+
+# Crear un directorio temporal para las dependencias
+RUN mkdir src && echo "fn main() {}" > src/main.rs
+
+# Descargar las dependencias
+RUN cargo build --release && rm -rf src
+
+# Copiar el código fuente
+COPY . .
+
+# Compilar el binario en modo release
+RUN cargo build --release
+
+# Etapa 2: Crear la imagen final
+FROM debian:bookworm-slim 
+
+# Instalar las dependencias requeridas
+RUN apt-get update && apt-get install -y ca-certificates && rm -rf /var/lib/apt/lists/*
+
+# Crear un directorio de trabajo
+WORKDIR /app
+
+# Copiar el binario desde la etapa de construcción
+COPY --from=builder /app/target/release/rust_service .
+
+# Exponer el puerto 8080
+EXPOSE 8081
+
+# Ejecutar la aplicación
+CMD ["./rust_service"]
