@@ -16,7 +16,7 @@ class StudentTraffic(HttpUser):
             # response = self.client.post(f"/{student['faculty'].lower()}", json=student)
             # print(f"Enviando datos: {student} - Respuesta: {response.status_code}")
             if student['faculty'].lower() == 'ingenieria':
-                self.client.post("http://34.133.16.40/engineering", json=student)
+                self.client.post("http://35.222.231.77/engineering", json=student)
                 print(f"Enviando datos: {student}")
             elif student['faculty'].lower() == 'agronomia':
                 self.client.post("http://34.133.16.40/agronomy", json=student)
