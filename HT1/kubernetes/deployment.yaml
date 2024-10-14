@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ht1-deployment
+  namespace: so1-ht1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ht1-app
+  template:
+    metadata:
+      labels:
+        app: ht1-app
+    spec:
+      containers:
+      - name: ht1-app-container
+        image: jajsivianc/go-ht1:1.0.0 # Aquí debes poner la imagen de tu aplicación en Go
+        ports:
+        - containerPort: 8080  # El puerto que tu aplicación en Go escucha
+        resources:
+          requests:
+            cpu: "0.1"
+            memory: "30Mi"
+          limits:
+            cpu: "0.1"
+            memory: "40Mi"

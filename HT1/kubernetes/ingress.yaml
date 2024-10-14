@@ -1,0 +1,19 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ht1-ingress
+  namespace: so1-ht1
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  rules:
+  - host: ht1.com
+    http:
+      paths:
+      - path: /get-info
+        pathType: Prefix
+        backend:
+          service:
+            name: print-service
+            port:
+              number: 80
