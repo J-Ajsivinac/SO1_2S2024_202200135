@@ -1,13 +1,13 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: olimpiadas-ingress
+  name: ingress
   namespace: so1-proyecto2
   annotations:
     nginx.ingress.kubernetes.io/rewrite-target: /
 spec:
   rules:
-  - host: olimpiadas-usac.com
+  - host: 35.232.190.221.nip.io
     http:
       paths:
       - path: /engineering
@@ -16,11 +16,11 @@ spec:
           service:
             name: engineering-service
             port:
-              number: 80
+              number: 8080
       - path: /agronomy
         pathType: Prefix
         backend:
           service:
             name: agronomy-service
             port:
-              number: 80
+              number: 8080
