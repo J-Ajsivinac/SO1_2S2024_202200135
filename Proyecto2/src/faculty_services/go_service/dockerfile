@@ -1,26 +1,21 @@
-FROM golang:1.22.7 AS builder
+FROM golang:1.23-bullseye AS build
 
-# Establecer el directorio de trabajo dentro del contenedor
-WORKDIR /app
+WORKDIR /app 
 
-# Copiar el código Go al directorio de trabajo del contenedor
+COPY go.mod go.sum ./
+
+RUN go mod download
+
 COPY . .
 
-# Compilar el binario
-RUN go mod tidy
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o agronomia-service main.go
+RUN go build \
+  -ldflags="-linkmode external -extldflags -static" \
+  -tags netgo \
+  -o client
 
-# Etapa 2: Crear la imagen final
-FROM alpine:latest
+FROM scratch
 
-# Establecer el directorio de trabajo en el contenedor final
-WORKDIR /root/
+COPY --from=build /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
+COPY --from=build /app/client client
 
-# Copiar el binario de la etapa de construcción
-COPY --from=builder /app/agronomia-service .
-
-# Exponer el puerto 8080
-EXPOSE 8080
-
-# Comando para ejecutar la aplicación
-CMD ["./agronomia-service"]
+CMD ["/client"]

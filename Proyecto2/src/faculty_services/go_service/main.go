@@ -1,43 +1,92 @@
 package main
 
 import (
-	"encoding/json"
+	"context"
+	"flag"
 	"fmt"
+	pb "go_service/proto"
 	"go_service/schemas"
-	`io/ioutil`
-	"net/http"
+	"log"
+	"time"
+
+	"github.com/gofiber/fiber/v2"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
-func agronomyHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method != "POST" {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
+var (
+	addr = flag.String("addr", "localhost:50051", "the address to connect to")
+)
+
+func sendData(fiberCtx *fiber.Ctx) error {
+	var body schemas.Student
+	if err := fiberCtx.BodyParser(&body); err != nil {
+		return fiberCtx.Status(400).JSON(fiber.Map{
+			"error": err.Error(),
+		})
 	}
-	body, err := ioutil.ReadAll(r.Body)
+
+	// Set up a connection to the server.
+	conn, err := grpc.NewClient(*addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
+
 	if err != nil {
-		http.Error(w, "No se pudo leer la solicitud", http.StatusBadRequest)
-		return
+		log.Fatalf("did not connect: %v", err)
 	}
-	defer r.Body.Close()
+	defer conn.Close()
+	c := pb.NewStudentClient(conn)
 
-	var student schemas.Student
-	err = json.Unmarshal(body, &student)
-	if err != nil {
-		http.Error(w, "No se pudo decodificar el JSON", http.StatusBadRequest)
-		return
+	// Create a channel to receive the response and error
+	responseChan := make(chan *pb.StudentResponse)
+	errorChan := make(chan error)
+	go func() {
+
+		// Contact the server and print out its response.
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+		defer cancel()
+
+		r, err := c.GetStudentReq(ctx, &pb.StudentRequest{
+			Student:       body.Student,
+			Age:        int32(body.Age),
+			Faculty:    body.Faculty,
+			Discipline: pb.Discipline(body.Discipline),
+		})
+
+		if err != nil {
+			errorChan <- err
+			return
+		}
+
+		responseChan <- r
+	}()
+	fmt.Println(len(responseChan))
+	select {
+	case response := <-responseChan:
+		return fiberCtx.JSON(fiber.Map{
+			"message": response.GetSuccess(),
+		})
+	case err := <-errorChan:
+		return fiberCtx.Status(500).JSON(fiber.Map{
+			"error": err.Error(),
+			"message": "failed",
+		})
+	case <-time.After(5 * time.Second):
+		return fiberCtx.Status(500).JSON(fiber.Map{
+			"error": "timeout",
+		})
 	}
-
-	fmt.Printf("Recibido: Facultad = %s, Disciplina = %d, Estudiante = %s, Edad = %d", student.Faculty, student.Discipline, student.Student, student.Age)
-	fmt.Println()
-	fmt.Fprintf(w, "Datos recibidos correctamente")
-}
-
-func handleRequests() {
-	http.HandleFunc("/agronomy", agronomyHandler)
-	http.ListenAndServe(":8080", nil)
+	
+	// return fiberCtx.JSON(fiber.Map{
+	// 	"message": "success",
+	// })
 }
 
 func main() {
-	fmt.Println("Servicio de Agronomía iniciado")
-	handleRequests()
+	app := fiber.New()
+	app.Post("/faculty", sendData)
+
+	err := app.Listen(":8080")
+	if err != nil {
+		log.Println(err)
+		return
+	}
 }
