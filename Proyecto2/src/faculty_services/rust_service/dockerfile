@@ -1,38 +1,27 @@
-# Etapa 1: Compilar la aplicación
-FROM rust:1.81.0 AS builder
+# Build stage
+FROM rust:1.72 as builder
 
-# Crear un directorio de trabajo
-WORKDIR /app
+# Install protobuf compiler
+RUN apt-get update && apt-get install -y protobuf-compiler && rm -rf /var/lib/apt/lists/*
 
-# Copiar los archivos de configuración de Rust
-COPY Cargo.toml Cargo.lock ./
+WORKDIR /usr/src/app
 
-# Crear un directorio temporal para las dependencias
-RUN mkdir src && echo "fn main() {}" > src/main.rs
-
-# Descargar las dependencias
-RUN cargo build --release && rm -rf src
-
-# Copiar el código fuente
+# Copy the entire project
 COPY . .
 
-# Compilar el binario en modo release
+# Build the application
 RUN cargo build --release
 
-# Etapa 2: Crear la imagen final
-FROM debian:bookworm-slim 
+# Runtime stage
+FROM debian:buster-slim
 
-# Instalar las dependencias requeridas
-RUN apt-get update && apt-get install -y ca-certificates && rm -rf /var/lib/apt/lists/*
+# Install necessary runtime libraries
+RUN apt-get update && apt-get install -y libssl1.1 ca-certificates && rm -rf /var/lib/apt/lists/*
 
-# Crear un directorio de trabajo
 WORKDIR /app
 
-# Copiar el binario desde la etapa de construcción
-COPY --from=builder /app/target/release/rust_service .
+# Copy the built binary from the builder stage
+COPY --from=builder /usr/src/app/target/release/grpc-client .
 
-# Exponer el puerto 8080
-EXPOSE 8081
-
-# Ejecutar la aplicación
-CMD ["./rust_service"]
+# Set the startup command
+CMD ["./grpc-client"]

@@ -1,0 +1,26 @@
+syntax = "proto3";
+package student_grpc;
+// Define our service and the method
+service Student {
+    rpc GetStudentReq(StudentRequest) returns (StudentResponse);
+}
+
+
+// The student request message
+message StudentRequest {
+    string student = 1;
+    int32 age = 3;
+    string faculty = 2;
+    Discipline discipline = 4;
+}
+
+
+enum Discipline {
+    swimming = 0;
+    athletics = 1;
+    boxing = 2;
+}
+
+message StudentResponse {
+    string success = 1;
+}
