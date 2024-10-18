@@ -3,17 +3,18 @@ kind: Ingress
 metadata:
   name: ht1-ingress
   namespace: so1-ht1
-  annotations:
-    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    name: ht1-ingress
 spec:
+  ingressClassName: nginx
   rules:
-  - host: ht1.com
+  - host: 34.16.87.214.nip.io
     http:
       paths:
-      - path: /get-info
+      - path: /agronomy
         pathType: Prefix
         backend:
           service:
-            name: print-service
+            name: ht1-service
             port:
-              number: 80
+              number: 8080
