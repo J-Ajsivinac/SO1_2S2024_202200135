@@ -12,7 +12,7 @@
 ![alt text](imgs/img1.png)
 
 ![alt text](imgs/img3.png)
-![alt text](imgs/img4.png)
+![alt text](imgs/img5.png)
 
 # Proceso de Recepción
 ![alt text](imgs/img6.png)
