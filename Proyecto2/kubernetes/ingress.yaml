@@ -3,11 +3,12 @@ kind: Ingress
 metadata:
   name: ingress
   namespace: so1-proyecto2
-  annotations:
-    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    name: ingress
 spec:
+  ingressClassName: nginx
   rules:
-  - host: 35.232.190.221.nip.io
+  - host: 35.193.221.39.nip.io
     http:
       paths:
       - path: /engineering

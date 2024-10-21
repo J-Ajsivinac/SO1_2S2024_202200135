@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: winners-app
+  namespace: so1-proyecto2
+spec:
+  selector:
+    matchLabels:
+      app: winners-app
+  template:
+    metadata:
+      labels:
+        app: winners-app
+    spec:
+      containers:
+      - name: winners-app-container
+        image: jajsivianc/winners-consumer:1.0.0
+        resources:
+          limits:
+            memory: "128Mi"
+            cpu: "0.2"
+        ports:
+        - containerPort: 8080

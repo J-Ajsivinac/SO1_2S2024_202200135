@@ -1,0 +1,22 @@
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: topic-winner
+  namespace: so1-proyecto2
+  labels:
+    strimzi.io/cluster: cluster-kafka
+spec:
+  partitions: 1
+  replicas: 1
+
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: topic-loser
+  namespace: so1-proyecto2
+  labels:
+    strimzi.io/cluster: cluster-kafka
+spec:
+  partitions: 1
+  replicas: 1
