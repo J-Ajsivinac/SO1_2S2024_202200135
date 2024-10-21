@@ -15,7 +15,7 @@ import (
 )
 
 var (
-	addr = flag.String("addr", "localhost:50051", "the address to connect to")
+	addr = flag.String("addr", "athletics-service:50051", "the address to connect to")
 )
 
 func sendData(fiberCtx *fiber.Ctx) error {
@@ -82,7 +82,7 @@ func sendData(fiberCtx *fiber.Ctx) error {
 
 func main() {
 	app := fiber.New()
-	app.Post("/faculty", sendData)
+	app.Post("/agronomy", sendData)
 
 	err := app.Listen(":8080")
 	if err != nil {
