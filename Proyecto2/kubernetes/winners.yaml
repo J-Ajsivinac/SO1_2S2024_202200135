@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: winners-app-container
-        image: jajsivianc/winners-consumer:1.0.0
+        image: jajsivianc/winners-consumer:1.0.4
         resources:
           limits:
             memory: "128Mi"

@@ -1,7 +1,7 @@
 apiVersion: kafka.strimzi.io/v1beta2
 kind: KafkaTopic
 metadata:
-  name: topic-winner
+  name: winners
   namespace: so1-proyecto2
   labels:
     strimzi.io/cluster: cluster-kafka
@@ -13,7 +13,7 @@ spec:
 apiVersion: kafka.strimzi.io/v1beta2
 kind: KafkaTopic
 metadata:
-  name: topic-loser
+  name: loser
   namespace: so1-proyecto2
   labels:
     strimzi.io/cluster: cluster-kafka

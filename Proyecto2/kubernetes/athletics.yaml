@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: athletics-app
-        image: jajsivianc/athletics:1.0.1
+        image: jajsivianc/athletics:1.0.6
         resources:
           limits:
             memory: "120Mi"
