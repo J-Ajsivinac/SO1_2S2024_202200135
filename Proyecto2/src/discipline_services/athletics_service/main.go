@@ -33,15 +33,12 @@ func (s *server) GetStudentReq(_ context.Context, in *pb.StudentRequest) (*pb.St
 	log.Printf("Student faculty: %s", in.GetFaculty())
 	log.Printf("Student age: %d", in.GetAge())
 	log.Printf("Student discipline: %s", in.GetDiscipline())
-
+	
 	rand.Seed(time.Now().UnixNano())
 	value1 := rand.Intn(2) // Random number between 0 and 1
 	log.Printf("Random number: %d", value1)
 
 	if value1 == 1 {
-		// Crear un mapa para el mensaje JSON
-		// Enviar el JSON a Kafka
-		// sendToKafka("winners", string(jsonSend))
 		Produce(StudentOrder{
 			Student:        in.GetStudent(),
 			Faculty:        in.GetFaculty(),
@@ -50,6 +47,15 @@ func (s *server) GetStudentReq(_ context.Context, in *pb.StudentRequest) (*pb.St
 			Winner:         value1,
 			DisciplineName: discipline,
 		}, "winners")
+	} else {
+		Produce(StudentOrder{
+			Student:        in.GetStudent(),
+			Faculty:        in.GetFaculty(),
+			Age:            int(in.GetAge()),
+			Discipline:     int(in.GetDiscipline()),
+			Winner:         value1,
+			DisciplineName: discipline,
+		}, "losers")
 	}
 
 	return &pb.StudentResponse{
@@ -72,86 +78,6 @@ func main() {
 		log.Fatalf("Failed to serve: %v", err)
 	}
 }
-
-// func sendToKafka(topicName string, value string) {
-// 	// Configuración del productor para Strimzi Kafka
-// 	producer, err := kafka.NewProducer(&kafka.ConfigMap{
-// 		// Usa el FQDN completo incluyendo el namespace correcto
-// 		"bootstrap.servers": "my-cluster-kafka-bootstrap.so1-proyecto2.svc.cluster.local:9092",
-// 		"client.id":         "athletics-service",
-// 		"acks":              "all",
-// 		"retries":           3,
-// 		"retry.backoff.ms":  1000,
-// 		"socket.timeout.ms": 30000,
-// 		"message.timeout.ms": 30000,
-// 		"debug":             "broker,topic,msg",
-// 	})
-// 	if err != nil {
-// 		log.Printf("Error creating producer: %s", err)
-// 		return
-// 	}
-// 	defer producer.Close()
-
-// 	// Crear el topic si no existe (opcional)
-// 	adminClient, err := kafka.NewAdminClient(&kafka.ConfigMap{
-// 		"bootstrap.servers": "my-cluster-kafka-bootstrap.so1-proyecto2.svc.cluster.local:9092",
-// 	})
-// 	if err == nil {
-// 		// Intenta crear el topic
-// 		topicSpecs := []kafka.TopicSpecification{{
-// 			Topic:             topicName,
-// 			NumPartitions:     1,
-// 			ReplicationFactor: 1,
-// 		}}
-// 		_, err := adminClient.CreateTopics(context.Background(), topicSpecs)
-// 		if err != nil {
-// 			log.Printf("Warning: Could not create topic: %v", err)
-// 		}
-// 		adminClient.Close()
-// 	}
-
-// 	deliveryChan := make(chan kafka.Event)
-// 	topic := topicName
-// 	message := value
-
-// 	err = producer.Produce(&kafka.Message{
-// 		TopicPartition: kafka.TopicPartition{Topic: &topic, Partition: kafka.PartitionAny},
-// 		Value:          []byte(message),
-// 		Headers: []kafka.Header{
-// 			{
-// 				Key:   "source",
-// 				Value: []byte("athletics-service"),
-// 			},
-// 		},
-// 	}, deliveryChan)
-
-// 	if err != nil {
-// 		log.Printf("Error producing message: %s", err)
-// 		return
-// 	}
-
-// 	// Manejo de eventos de entrega
-// 	go func() {
-// 		for e := range deliveryChan {
-// 			switch ev := e.(type) {
-// 			case *kafka.Message:
-// 				if ev.TopicPartition.Error != nil {
-// 					log.Printf("Failed to deliver message: %v\n", ev.TopicPartition.Error)
-// 				} else {
-// 					log.Printf("Successfully delivered message to topic %s [%d] at offset %v\n",
-// 						*ev.TopicPartition.Topic, ev.TopicPartition.Partition, ev.TopicPartition.Offset)
-// 				}
-// 			}
-// 		}
-// 	}()
-
-// 	remaining := producer.Flush(15 * 1000)
-// 	if remaining > 0 {
-// 		log.Printf("Failed to flush all messages. %d messages remaining\n", remaining)
-// 	}
-
-// 	close(deliveryChan)
-// }
 
 type StudentOrder struct {
 	Student        string `json:"student"`         // Nombre del estudiante
