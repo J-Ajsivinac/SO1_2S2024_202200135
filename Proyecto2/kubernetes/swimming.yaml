@@ -1,20 +1,20 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: athletics-app
+  name: swimming-deployment
   namespace: so1-proyecto2
 spec:
   selector:
     matchLabels:
-      app: athletics-app
+      app: swimming-app
   template:
     metadata:
       labels:
-        app: athletics-app
+        app: swimming-app
     spec:
       containers:
-      - name: athletics-app
-        image: jajsivianc/athletics:1.0.7
+      - name: swimming-app
+        image: jajsivianc/swimming:1.0.1
         resources:
           limits:
             memory: "120Mi"
@@ -27,11 +27,11 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: athletics-service
+  name: swimming-service
   namespace: so1-proyecto2
 spec:
   selector:
-    app: athletics-app
+    app: swimming-app
   ports:
   - protocol: TCP
     port: 50051

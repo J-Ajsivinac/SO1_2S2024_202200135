@@ -13,7 +13,7 @@ spec:
 apiVersion: kafka.strimzi.io/v1beta2
 kind: KafkaTopic
 metadata:
-  name: loser
+  name: losers
   namespace: so1-proyecto2
   labels:
     strimzi.io/cluster: cluster-kafka

@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
       - name: agronomy-app-container
-        image: jajsivianc/go-agronomy:1.0.2
+        image: jajsivianc/go-agronomy:1.0.3
         ports:
         - containerPort: 8080  # El puerto que tu aplicación en Go escucha
         resources:

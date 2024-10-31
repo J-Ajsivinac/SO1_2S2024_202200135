@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: losers-deployment
+  namespace: so1-proyecto2
+spec:
+  selector:
+    matchLabels:
+      app: losers-app
+  template:
+    metadata:
+      labels:
+        app: losers-app
+    spec:
+      containers:
+      - name: losers-app-container
+        image: jajsivianc/loser-consumer:1.0.0
+        resources:
+          limits:
+            memory: "128Mi"
+            cpu: "0.2"
+        ports:
+        - containerPort: 8080
