@@ -19,6 +19,27 @@ var (
 	boxingAddr    = flag.String("boxingAddr", "boxing-service:50051", "boxing service address")
 )
 
+func sendDataToDiscipline(serviceAddr string, request *pb.StudentRequest, resultChan chan<- *pb.StudentResponse, errorChan chan<- error) {
+	conn, err := grpc.NewClient(serviceAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		errorChan <- err
+		return
+	}
+	defer conn.Close()
+
+	client := pb.NewStudentClient(conn)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+
+	response, err := client.GetStudentReq(ctx, request)
+	if err != nil {
+		errorChan <- err
+		return
+	}
+
+	resultChan <- response
+}
+
 func sendData(fiberCtx *fiber.Ctx) error {
 	var body schemas.Student
 	if err := fiberCtx.BodyParser(&body); err != nil {
@@ -31,9 +52,9 @@ func sendData(fiberCtx *fiber.Ctx) error {
 	var serviceAddr string
 	switch body.Discipline {
 	case 1:
-		serviceAddr = *athleticsAddr
-	case 2:
 		serviceAddr = *swimmingAddr
+	case 2:
+		serviceAddr = *athleticsAddr
 	case 3:
 		serviceAddr = *boxingAddr
 	default:
@@ -42,45 +63,44 @@ func sendData(fiberCtx *fiber.Ctx) error {
 		})
 	}
 
-	conn, err := grpc.NewClient(serviceAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
-	if err != nil {
-		return fiberCtx.Status(500).JSON(fiber.Map{
-			"error":   "Cannot connect to service",
-			"message": err.Error(),
-		})
-	}
-	defer conn.Close()
+	// Crear los canales para manejar la respuesta y errores
+	resultChan := make(chan *pb.StudentResponse)
+	errorChan := make(chan error)
 
-	c := pb.NewStudentClient(conn)
-
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
-	defer cancel()
-
-	r, err := c.GetStudentReq(ctx, &pb.StudentRequest{
+	// Crear una solicitud StudentRequest
+	request := &pb.StudentRequest{
 		Student:    body.Student,
 		Faculty:    body.Faculty,
 		Age:        int32(body.Age),
 		Discipline: pb.Discipline(body.Discipline),
-	})
+	}
 
-	if err != nil {
+	// Iniciar una goroutine para enviar la solicitud gRPC
+	go sendDataToDiscipline(serviceAddr, request, resultChan, errorChan)
+
+	select {
+	case response := <-resultChan:
+		return fiberCtx.Status(200).JSON(fiber.Map{
+			"success": response.Success,
+		})
+	case err := <-errorChan:
 		return fiberCtx.Status(500).JSON(fiber.Map{
 			"error":   "Cannot get student",
 			"message": err.Error(),
 		})
+	case <-time.After(time.Second):
+		return fiberCtx.Status(500).JSON(fiber.Map{
+			"error": "Request timeout",
+		})
 	}
-
-	return fiberCtx.Status(200).JSON(fiber.Map{
-		"success": r.Success,
-	})
 }
 
 func main() {
+	flag.Parse()
 	app := fiber.New()
 	app.Post("/agronomy", sendData)
 
-	err := app.Listen(":8080")
-	if err != nil {
+	if err := app.Listen(":8080"); err != nil {
 		log.Println(err)
 		return
 	}
