@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: losers-app-container
-        image: jajsivianc/loser-consumer:1.0.0
+        image: jajsivianc/loser-consumer:1.0.4
         resources:
           limits:
             memory: "128Mi"

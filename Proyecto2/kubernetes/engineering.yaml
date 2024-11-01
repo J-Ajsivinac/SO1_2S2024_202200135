@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
       - name: engineering-app-container
-        image: jajsivianc/rust-engineering:latest
+        image: jajsivianc/rust-engineering:1.0.9
         ports:
         - containerPort: 8080
         resources:
