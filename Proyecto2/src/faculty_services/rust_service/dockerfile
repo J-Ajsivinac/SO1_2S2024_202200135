@@ -1,5 +1,5 @@
 # Build stage
-FROM rust:1.72 as builder
+FROM rust:1.81.0 AS builder
 
 # Install protobuf compiler
 RUN apt-get update && apt-get install -y protobuf-compiler && rm -rf /var/lib/apt/lists/*
@@ -13,10 +13,10 @@ COPY . .
 RUN cargo build --release
 
 # Runtime stage
-FROM debian:buster-slim
+FROM debian:bookworm-slim 
 
 # Install necessary runtime libraries
-RUN apt-get update && apt-get install -y libssl1.1 ca-certificates && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y libssl3 ca-certificates && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
