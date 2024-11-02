@@ -116,7 +116,7 @@ func main() {
 			log.Println("failed to read message:", err)
 			break
 		}
-		fmt.Printf("message at offset %d: %s = %s\n", m.Offset, string(m.Key), string(m.Value))
+		// fmt.Printf("message at offset %d: %s = %s\n", m.Offset, string(m.Key), string(m.Value))
 
 		// Procesar el evento
 		processEvent(m.Value, redisClient)

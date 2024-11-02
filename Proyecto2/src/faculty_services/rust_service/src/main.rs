@@ -42,7 +42,7 @@ async fn process_grpc_request(student: StudentData, host: String) -> Result<Stri
 }
 
 async fn handle_student(student: web::Json<StudentData>) -> impl Responder {
-    println!("Received student data: {:?}", student);
+    // println!("Received student data: {:?}", student);
 
     // Seleccionamos el host de servicio según la disciplina
     let host = match student.discipline {

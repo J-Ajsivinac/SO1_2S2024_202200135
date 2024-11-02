@@ -28,15 +28,9 @@ type server struct {
 
 // Implement the GetStudent method
 func (s *server) GetStudentReq(_ context.Context, in *pb.StudentRequest) (*pb.StudentResponse, error) {
-	log.Printf("Received: %v", in)
-	log.Printf("Student name: %s", in.GetStudent())
-	log.Printf("Student faculty: %s", in.GetFaculty())
-	log.Printf("Student age: %d", in.GetAge())
-	log.Printf("Student discipline: %s", in.GetDiscipline())
-
 	rand.Seed(time.Now().UnixNano())
 	value1 := rand.Intn(2) // Random number between 0 and 1
-	log.Printf("Random number: %d", value1)
+	// log.Printf("Random number: %d", value1)
 
 	if value1 == 1 {
 		Produce(StudentOrder{
