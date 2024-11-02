@@ -15,13 +15,13 @@ spec:
     spec:
       containers:
       - name: agronomy-app-container
-        image: jajsivianc/go-agronomy:1.0.4
+        image: jajsivianc/go-agronomy:1.0.7
         ports:
         - containerPort: 8080  # El puerto que tu aplicación en Go escucha
         resources:
           limits:
-            cpu: "0.2"
-            memory: "40Mi"
+            cpu: "0.25"
+            memory: "50Mi"
 ---
 
 apiVersion: v1

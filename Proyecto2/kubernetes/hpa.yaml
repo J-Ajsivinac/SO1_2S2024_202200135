@@ -26,6 +26,6 @@ spec:
     name: agronomy-deployment
   minReplicas: 2
   maxReplicas: 5
-  targetCPUUtilizationPercentage: 35
+  targetCPUUtilizationPercentage: 40
 
 
