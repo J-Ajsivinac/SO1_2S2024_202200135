@@ -230,6 +230,54 @@ Para instalar Redis con Bitnami, ejecute los siguientes comandos:
 
 ---
 
+### 2.6 HPA
+
+**Archivos:** `hpa.yaml`,
+
+Configura un HPA (Horizontal Pod Autoscaler) para aumentar el número de pods cuando se
+sobrepase los recursos.
+
+```yaml
+apiVersion: autoscaling/v1
+kind: HorizontalPodAutoscaler
+metadata:
+  name: hpa-node-engineering
+  namespace: so1-proyecto2
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: engineering-deployment
+  minReplicas: 2
+  maxReplicas: 5
+  targetCPUUtilizationPercentage: 35
+
+---
+
+apiVersion: autoscaling/v1
+kind: HorizontalPodAutoscaler
+metadata:
+  name: hpa-node-agronomy
+  namespace: so1-proyecto2
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: agronomy-deployment
+  minReplicas: 2
+  maxReplicas: 5
+  targetCPUUtilizationPercentage: 35
+```
+
+
+**Despliegue:**
+
+```bash
+kubectl apply -f hpa.yaml
+```
+
+---
+
 ### 2.8 Grafana y Prometheus
 
 #### Asignar permisos para GKE (opcional para Google Cloud Platform):
