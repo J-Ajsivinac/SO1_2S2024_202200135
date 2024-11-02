@@ -15,10 +15,10 @@ class StudentTraffic(HttpUser):
         for student in self.students_data:
             if student['faculty'].lower() == 'ingenieria':
                 self.client.post("/engineering", json=student)
-                print(f"Enviando datos: {student}")
+                # print(f"Enviando datos: {student}")
             elif student['faculty'].lower() == 'agronomia':
                 self.client.post("/agronomy", json=student)
-                print(f"Enviando datos: {student}")
+                # print(f"Enviando datos: {student}")
 
 
 # Ejecutar Locust
