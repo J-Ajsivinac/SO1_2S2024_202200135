@@ -37,8 +37,8 @@ type RedisClient struct {
 func NewRedisClient() *RedisClient {
 	client := redis.NewClient(&redis.Options{
 		Addr:     "redis-master:6379", // Dirección de tu servidor Redis
-		Password: "Wfsitpf49L",                   // Contraseña (si es que se usa alguna)
-		DB:       0,                    // Base de datos de Redis
+		Password: "Wfsitpf49L",        // Contraseña (si es que se usa alguna)
+		DB:       0,                   // Base de datos de Redis
 	})
 	ctx := context.Background()
 
@@ -60,11 +60,6 @@ func (r *RedisClient) SaveStudent(student StudentSave) error {
 	if student.IsWinner {
 		if student.Discipline != "" {
 			_, err = r.client.HIncrBy(r.ctx, "discipline:winners", student.Discipline, 1).Result()
-			if err != nil {
-				return fmt.Errorf("failed to save student: %s", err)
-			}
-
-			_, err = r.client.HIncrBy(r.ctx, "faculty:winners", student.Faculty, 1).Result()
 			if err != nil {
 				return fmt.Errorf("failed to save student: %s", err)
 			}
