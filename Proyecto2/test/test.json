@@ -2,7 +2,7 @@
     {
         "student": "John Doe",
         "age": 20,
-        "faculty": "Ingenieria",
+        "faculty": "Ingeniería",
         "discipline": 1
     },
     {
@@ -21,6 +21,6 @@
         "student": "Jane Smith",
         "age": 23,
         "faculty": "Ingenieria",
-        "discipline": 4
+        "discipline": 2
     }
 ]
