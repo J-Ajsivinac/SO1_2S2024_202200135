@@ -30,7 +30,6 @@ type server struct {
 func (s *server) GetStudentReq(_ context.Context, in *pb.StudentRequest) (*pb.StudentResponse, error) {
 	rand.Seed(time.Now().UnixNano())
 	value1 := rand.Intn(2) // Random number between 0 and 1
-	// log.Printf("Random number: %d", value1)
 
 	if value1 == 1 {
 		Produce(StudentOrder{
@@ -82,7 +81,6 @@ type StudentOrder struct {
 	DisciplineName string `json:"discipline_name"` // Nombre de la disciplina
 }
 
-// usando segmentio/kafka-go
 
 func Produce(value StudentOrder, topicName string) {
 	// to produce messages
@@ -111,5 +109,4 @@ func Produce(value StudentOrder, topicName string) {
 		log.Fatal("failed to close writer:", err)
 	}
 
-	// log.Println("Message sent")
 }

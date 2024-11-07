@@ -5,7 +5,6 @@ class StudentTraffic(HttpUser):
     wait_time = between(10, 15)
 
     def on_start(self):
-        # Cargar el archivo JSON al iniciar Locust
         with open('students.json', 'r') as file:
             self.students_data = json.load(file)
 
@@ -15,10 +14,8 @@ class StudentTraffic(HttpUser):
         for student in self.students_data:
             if student['faculty'].lower() == 'ingenieria':
                 self.client.post("/engineering", json=student)
-                # print(f"Enviando datos: {student}")
             elif student['faculty'].lower() == 'agronomia':
                 self.client.post("/agronomy", json=student)
-                # print(f"Enviando datos: {student}")
 
 
 # Ejecutar Locust

@@ -19,8 +19,7 @@ def generate_student_data(num_students):
     
     return students
 
-# Genera el JSON con el número deseado de estudiantes
-num_students = 10000  # Cambia este valor al tamaño deseado
+num_students = 10000  
 students_data = generate_student_data(num_students)
 
 # Guarda el resultado en un archivo JSON

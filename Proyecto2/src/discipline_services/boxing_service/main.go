@@ -82,7 +82,6 @@ type StudentOrder struct {
 	DisciplineName string `json:"discipline_name"` // Nombre de la disciplina
 }
 
-// usando segmentio/kafka-go
 
 func Produce(value StudentOrder, topicName string) {
 	// to produce messages
@@ -94,7 +93,6 @@ func Produce(value StudentOrder, topicName string) {
 		log.Fatal("failed to dial leader:", err)
 	}
 
-	// Convert the data struct into a byte slice
 	valueBytes, err := json.Marshal(value)
 	if err != nil {
 		log.Fatalf("Failed to marshal value: %v", err)

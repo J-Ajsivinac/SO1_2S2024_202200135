@@ -10,7 +10,7 @@ import (
 	"github.com/segmentio/kafka-go"
 )
 
-// Estructura para representar la orden del estudiante
+// Estructura para representar estudiante
 type StudentOrder struct {
 	Student        string `json:"student"`         // Nombre del estudiante
 	Faculty        string `json:"faculty"`         // Facultad del estudiante
@@ -37,7 +37,7 @@ type RedisClient struct {
 func NewRedisClient() *RedisClient {
 	client := redis.NewClient(&redis.Options{
 		Addr:     "redis-master:6379", // Dirección de tu servidor Redis
-		Password: "Wfsitpf49L",        // Contraseña (si es que se usa alguna)
+		Password: "Wfsitpf49L",        // Contraseña
 		DB:       0,                   // Base de datos de Redis
 	})
 	ctx := context.Background()
@@ -94,7 +94,7 @@ func processEvent(event []byte, redisClient *RedisClient) {
 func main() {
 	// Crear una instancia del cliente de Redis
 	redisClient := NewRedisClient()
-	defer redisClient.client.Close() // Asegúrate de cerrar el cliente después de usarlo
+	defer redisClient.client.Close() 
 
 	topic := "winners"
 
@@ -116,7 +116,6 @@ func main() {
 			log.Println("failed to read message:", err)
 			break
 		}
-		// fmt.Printf("message at offset %d: %s = %s\n", m.Offset, string(m.Key), string(m.Value))
 
 		// Procesar el evento
 		processEvent(m.Value, redisClient)
