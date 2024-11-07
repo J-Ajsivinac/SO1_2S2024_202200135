@@ -19,20 +19,21 @@
 
 <div align="center" style="display:flex;justify-content:center;gap:20px">
  <a href="https://skillicons.dev">
-    <img src="https://go-skill-icons.vercel.app/api/icons?i=k8s,go,rust,docker,helm,grpc,redis,grafana,prometheus,python" />
+    <img src="https://go-skill-icons.vercel.app/api/icons?i=k8s,go,rust,docker,helm,grpc,redis,grafana,prometheus,python,gcp" />
   </a>
 </div>
 <ul>
   <li>Kubernetes</li>
   <li>Go</li>
   <li>Rust</li>
-  <li>Dockerr</li>
+  <li>Docker</li>
   <li>Helm</li>
   <li>GRPC</li>
   <li>Redis</li>
   <li>Grafana</li>
   <li>Prometheus</li>
   <li>Python</li>
+  <li>GCP</li>
   </ul>
 </ul>
 
